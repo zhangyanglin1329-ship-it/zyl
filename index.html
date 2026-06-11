@@ -1,0 +1,695 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小倍数据 · 基金营销数据看板 V1.2.1｜UI提分版</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+:root{
+  --bg:#f5f6f8;--side:#f7f7f7;--card:#fff;--line:#e9edf2;--text:#1f2a3d;--muted:#98a2b3;
+  --orange:#ffa51e;--orange-bg:#fff4df;--green:#12b76a;--red:#f04438;--blue:#2f80ed;--purple:#7c5cff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;color:var(--text)}
+.app{display:flex;min-height:100vh}
+.side{width:220px;background:var(--side);border-right:1px solid #ededed;position:fixed;left:0;top:0;bottom:0;padding:22px 18px}
+.brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:600;margin-bottom:30px}.logo{width:26px;height:26px;border-radius:50%;background:#ffe3b0;display:grid;place-items:center}
+.navTitle{font-size:15px;color:#344054;margin:22px 0 10px;display:flex;align-items:center;gap:8px}.navBtn{display:block;width:100%;height:42px;border:0;border-radius:8px;text-align:left;padding:0 16px;background:transparent;color:#526174;font-size:16px;cursor:pointer;margin-bottom:4px}.navBtn.active{background:var(--orange-bg);color:var(--orange)}
+.main{margin-left:220px;width:calc(100vw - 220px)}.top{height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}.title{font-size:30px;font-weight:400}.time{font-size:16px;color:var(--muted);margin-left:18px}.user{display:flex;align-items:center;gap:10px;font-size:17px}.avatar{width:44px;height:44px;border-radius:50%;background:var(--orange-bg);display:grid;place-items:center}
+.content{padding:0 40px 40px}.card{background:var(--card);border-radius:12px;padding:24px 28px;margin-bottom:18px}.card h3{margin:0 0 6px;font-size:18px}.desc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}.hero{background:linear-gradient(135deg,#fff 0%,#fff8ec 100%);border:1px solid #ffe7bd;border-radius:14px;padding:24px 28px;margin-bottom:18px;display:flex;justify-content:space-between;gap:24px}.hero h2{margin:0 0 8px;font-size:24px}.hero p{margin:0;color:#667085;font-size:14px;line-height:1.7}.heroTags{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.heroTag{background:#fff;border:1px solid #ffe0aa;color:#b26b00;border-radius:999px;padding:7px 12px;font-size:13px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr)}.metrics.five{grid-template-columns:repeat(5,1fr)}.metric{padding:0 22px;border-right:1px solid var(--line);min-height:82px}.metric:first-child{padding-left:0}.metric:last-child{border-right:0}.ml{font-size:14px;color:#667085;margin-bottom:8px}.mv{font-size:32px;font-weight:400}.ms{font-size:13px;color:var(--muted);margin-top:8px}.up{color:var(--red)}.down{color:var(--green)}
+.toolbar,.splitHead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.leftTools,.rightTools,.seg{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.pill,.btn.light{height:36px;border-radius:999px;border:1px solid #e4e7ec;background:#fff;padding:0 16px;color:#667085;cursor:pointer}.pill.active{background:var(--orange-bg);border-color:var(--orange);color:var(--orange);font-weight:600}.btn{height:38px;border:0;border-radius:8px;background:var(--orange);color:#fff;padding:0 18px;cursor:pointer}.btn.light{border-radius:8px;background:#fff;color:#667085}
+input,select{height:38px;border:1px solid #d8dee8;border-radius:8px;background:#fff;padding:0 12px;color:#667085}.tableWrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:760px;font-size:14px}th{background:#fafafa;color:#8a95a6;text-align:left;font-weight:500;padding:14px;border-bottom:1px solid var(--line);white-space:nowrap}td{padding:14px;border-bottom:1px solid var(--line);white-space:nowrap}tr.clickable{cursor:pointer}tr.clickable:hover{background:#f3f6fa}.highlight{color:var(--orange);font-weight:600}.tag{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px}.tag.orange{background:var(--orange-bg);color:var(--orange)}.tag.green{background:#ecfdf3;color:var(--green)}.tag.blue{background:#eef4ff;color:var(--blue)}.tag.gray{background:#f2f4f7;color:#667085}
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:18px}.miniTitle{font-size:16px;font-weight:600;margin-bottom:10px}.tabs{display:flex;gap:20px;background:#fff;border-radius:10px;padding:0 24px;height:60px;align-items:center;margin-bottom:18px}.tab{border:0;background:transparent;font-size:16px;color:var(--muted);height:60px;cursor:pointer;border-bottom:2px solid transparent}.tab.active{color:var(--text);border-bottom-color:var(--orange)}.crumb{display:flex;align-items:center;gap:12px;margin-bottom:16px}.back{border:0;background:transparent;color:#667085;font-size:14px;cursor:pointer}.dateRange{margin-left:auto;background:#fff;border:1px solid #eef1f5;border-radius:8px;padding:12px 18px;color:#667085}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}.s12{grid-column:span 12}.s8{grid-column:span 8}.s7{grid-column:span 7}.s6{grid-column:span 6}.s5{grid-column:span 5}.s4{grid-column:span 4}.chart{height:320px;width:100%}.chart.sm{height:260px}.compareGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:18px}.compareCard{border:1px solid #edf0f4;border-radius:10px;padding:18px;background:#fafbfc}.compareCard h4{margin:0 0 12px;font-size:16px}.compareRow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.compareItem{background:#fff;border-radius:8px;padding:12px}.compareItem .k{font-size:12px;color:#98a2b3;margin-bottom:6px}.compareItem .v{font-size:18px;font-weight:600}.hintBox{background:#fafafa;border:1px dashed #e4e7ec;border-radius:10px;padding:12px 14px;color:#667085;font-size:13px;line-height:1.7}.sectionMark{display:inline-flex;align-items:center;gap:8px}.sectionMark:before{content:"";display:inline-block;width:4px;height:16px;background:var(--orange);border-radius:999px}.priority{display:inline-block;border-radius:6px;padding:2px 8px;font-size:12px;margin-left:8px;background:#fff4df;color:#ffa51e}
+
+.notice{background:#fffaf0;border:1px solid #ffe3b0;border-radius:10px;padding:10px 14px;color:#8a5a00;font-size:13px;line-height:1.6;margin-top:12px}
+.subCard{border:1px solid #edf0f4;border-radius:12px;padding:18px;background:#fff;margin-bottom:14px}.subCard h4{margin:0 0 12px;font-size:16px}.rankSep td{background:#fff8ec;color:#b26b00;font-weight:600;text-align:center}.mask{color:#98a2b3}.viewNote{font-size:12px;color:#98a2b3;margin-left:10px}.metrics.three{grid-template-columns:repeat(3,1fr)}
+.companyRow{background:#fffaf0}.companyRow td{font-weight:600}.toggleGroup{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.controlBlock{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.controlLabel{font-size:12px;color:#98a2b3;margin-right:2px}.tradePanel{border:1px solid #edf0f4;border-radius:12px;padding:16px;background:#fafbfc;margin-bottom:14px}.realtimeGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.realtimeItem{background:#fff;border:1px solid #edf0f4;border-radius:10px;padding:14px}.realtimeItem .k{font-size:12px;color:#98a2b3;margin-bottom:8px}.realtimeItem .v{font-size:24px;font-weight:700}.metrics.three{grid-template-columns:repeat(3,1fr)}
+
+.insightHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.periodTag{display:inline-block;border-radius:999px;background:#f2f4f7;color:#667085;padding:5px 10px;font-size:12px}.insightMetrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}.insightMetric{border:1px solid #edf0f4;border-radius:10px;padding:12px;background:#fafbfc}.insightMetric .k{font-size:12px;color:#98a2b3;margin-bottom:6px}.insightMetric .v{font-size:20px;font-weight:600;color:#1f2a3d}.aiSummary{background:#fffaf0;border:1px solid #ffe3b0;border-radius:10px;padding:12px 14px;color:#5f3b00;font-size:13px;line-height:1.7;margin:12px 0}.tagList{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}.topicTag{display:inline-block;border-radius:999px;background:#fff4df;color:#b26b00;padding:5px 10px;font-size:12px}.keywordTag{display:inline-block;border-radius:999px;background:#f2f4f7;color:#667085;padding:5px 10px;font-size:12px}.voiceList{display:grid;gap:10px;margin-top:10px}.voiceCard{border:1px solid #edf0f4;border-radius:10px;padding:12px 14px;background:#fff}.voiceText{font-size:13px;line-height:1.7;color:#344054;margin-bottom:8px;white-space:normal}.voiceMeta{font-size:12px;color:#98a2b3}.insightNote{font-size:12px;color:#98a2b3;line-height:1.6;margin-top:10px}
+@media(max-width:1400px){.metrics,.metrics.five{grid-template-columns:repeat(2,1fr);gap:18px}.metric{border-right:0;padding:0}.dual,.compareGrid{grid-template-columns:1fr}.s12,.s8,.s7,.s6,.s5,.s4{grid-column:span 12}}
+
+
+/* V1.2 UI refinement: unified dashboard visual system */
+:root{
+  --bg:#f6f7fb;
+  --side:#ffffff;
+  --card:#ffffff;
+  --line:#e8edf3;
+  --text:#172033;
+  --muted:#7b8798;
+  --orange:#f59e0b;
+  --orange-bg:#fff7e8;
+  --green:#12b76a;
+  --red:#f04438;
+  --blue:#2f80ed;
+  --purple:#7c5cff;
+  --shadow:0 8px 24px rgba(16,24,40,.045);
+}
+body{background:var(--bg);color:var(--text);font-size:14px}
+.side{background:#fff;border-right:1px solid var(--line);padding:24px 16px;box-shadow:4px 0 20px rgba(16,24,40,.025)}
+.brand{height:44px;margin-bottom:30px;font-size:18px;font-weight:700;color:#1d2939;letter-spacing:.2px}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#ffb84d,#f59e0b);color:#fff;font-weight:800;box-shadow:0 8px 18px rgba(245,158,11,.22)}
+.navTitle{font-size:12px;color:#98a2b3;margin:24px 0 8px;letter-spacing:.6px}.navBtn{height:40px;border-radius:10px;padding:0 14px;font-size:14px;color:#667085;font-weight:500}.navBtn.active{background:var(--orange-bg);color:#b86b00;font-weight:700}.navBtn:hover{background:#f7f8fa}
+.top{height:88px;padding:0 36px;border-bottom:1px solid rgba(232,237,243,.75);background:rgba(246,247,251,.92);backdrop-filter:saturate(160%) blur(8px);position:sticky;top:0;z-index:5}.title{font-size:26px;font-weight:700;letter-spacing:-.2px}.time{font-size:13px;color:#98a2b3;margin-left:14px}.user{font-size:14px;color:#667085}.avatar{width:36px;height:36px;background:#fff;border:1px solid var(--line);color:#b86b00;font-weight:700}
+.content{padding:24px 36px 42px}.hero{border:1px solid #ffe6b8;border-radius:18px;background:linear-gradient(135deg,#fff 0%,#fff8ec 100%);box-shadow:var(--shadow);padding:24px 28px}.hero h2{font-size:24px;font-weight:750}.heroTag{font-size:12px;border-color:#ffdf9a;background:#fff;color:#9a5b00}
+.card{border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:22px 24px;margin-bottom:18px}.card h3{font-size:18px;font-weight:750;color:#1d2939;margin-bottom:6px}.desc{font-size:13px;color:#7b8798;line-height:1.65;margin-bottom:16px}.miniTitle{font-size:14px;font-weight:700;color:#344054;margin-bottom:10px}
+.metrics{gap:0}.metric{min-height:78px}.ml{font-size:13px;color:#7b8798}.mv{font-size:28px;font-weight:750;letter-spacing:-.4px}.ms{font-size:12px;color:#98a2b3}.pill{height:34px;border-color:#e4e7ec;color:#667085;font-size:13px}.pill.active{background:#fff4df;border-color:#f6b23b;color:#a15c00}.btn{background:#f59e0b;border-radius:10px}.btn.light{background:#fff;border:1px solid var(--line)}
+.tabs{height:56px;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:14px;margin-bottom:18px}.tab{height:56px;font-size:14px;font-weight:600}.tab.active{color:#b86b00;border-bottom-color:#f59e0b}.dateRange{font-size:13px;border-radius:10px;box-shadow:var(--shadow)}
+table{font-size:13px}th{background:#f8fafc;color:#667085;font-weight:700;padding:13px 14px}td{padding:13px 14px;color:#344054}tr.clickable:hover{background:#fffaf0}.tag{font-weight:600}.notice{background:#fffaf0;border-color:#ffe4b3;color:#7a4a00;border-radius:12px;font-size:12px}.hintBox{background:#fbfcfe;border-radius:12px}.chart{height:300px}.chart.sm{height:250px}
+
+/* User Voice Insight module */
+.insightCard{padding:0;overflow:hidden;background:#fff}.insightCard .insightShell{padding:20px 22px}.insightHead{align-items:center;margin:0 0 14px;border-bottom:1px solid #eef2f6;padding-bottom:14px}.insightHead h3{display:flex;align-items:center;gap:8px;margin:0 0 4px}.insightHead h3:before{content:"";width:4px;height:18px;background:#f59e0b;border-radius:999px}.periodTag{background:#f2f4f7;color:#667085;border:1px solid #e4e7ec;font-weight:600;padding:6px 10px}.insightMetrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 14px}.insightMetric{background:#f8fafc;border:1px solid #edf1f5;border-radius:12px;padding:13px 14px}.insightMetric .k{font-size:12px;color:#98a2b3;margin-bottom:6px}.insightMetric .v{font-size:22px;font-weight:800;color:#1d2939;letter-spacing:-.2px}.aiSummary{position:relative;background:#fff9ed;border:1px solid #ffe4b3;border-radius:12px;padding:14px 16px 14px 44px;color:#5f3b00;font-size:13px;line-height:1.75;margin:0 0 16px}.aiSummary:before{content:"AI";position:absolute;left:14px;top:14px;font-size:11px;font-weight:800;color:#b86b00;background:#fff;border:1px solid #ffd98a;border-radius:6px;padding:2px 4px}.insightBody{display:grid;grid-template-columns:1fr;gap:14px}.insightBlocks{display:grid;grid-template-columns:1fr 1fr;gap:14px}.insightBlock{border:1px solid #edf1f5;border-radius:12px;background:#fff;padding:14px}.tagList{margin:0;gap:8px}.topicTag,.keywordTag{font-size:12px;font-weight:600;padding:6px 10px}.topicTag{background:#fff4df;color:#9a5b00;border:1px solid #ffe4b3}.keywordTag{background:#f2f4f7;color:#667085;border:1px solid #e7ebf0}.voiceList{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:0}.voiceCard{background:#fbfcfe;border:1px solid #edf1f5;border-radius:12px;padding:13px 14px;border-left:3px solid #f6b23b}.voiceText{font-size:13px;line-height:1.65;color:#344054;margin-bottom:10px;white-space:normal}.voiceMeta{font-size:12px;color:#8a95a6}.insightNote{margin-top:12px;padding-top:12px;border-top:1px dashed #e4e7ec;font-size:12px;color:#98a2b3;line-height:1.6}.insightCard.s12 .insightBody{grid-template-columns:1fr}.insightCard.s12 .insightLayout{display:grid;grid-template-columns:1fr 1.1fr;gap:16px}.insightCard.s12 .voiceList{grid-template-columns:1fr}.s7{grid-column:span 7}.s5{grid-column:span 5}
+@media(max-width:1400px){.insightBlocks,.voiceList,.insightCard.s12 .insightLayout{grid-template-columns:1fr}.s7,.s5{grid-column:span 12}.top{padding:0 24px}.content{padding:20px 24px 36px}}
+
+
+.stackTables{display:grid;grid-template-columns:1fr;gap:18px}.stackTables .tableWrap table{min-width:760px}.controlPanel{display:flex;flex-direction:column;gap:10px;margin:8px 0 16px}.controlPanel .controlBlock{background:#fafbfc;border:1px solid #edf0f4;border-radius:10px;padding:10px 12px}
+
+
+/* final review fixes */
+html,body{max-width:100%;overflow-x:hidden}
+.app,.main,.content{min-width:0;max-width:100%;overflow-x:hidden}
+.main{width:auto;flex:1}
+.tableWrap{max-width:100%;overflow-x:auto}
+table{max-width:100%}
+.wrapCell{white-space:normal;line-height:1.55;min-width:220px;max-width:360px}
+.productCell{min-width:140px;max-width:220px}
+.controlPanel .controlBlock{padding:8px 10px}
+.controlPanel{gap:8px;margin:6px 0 14px}
+.stackTables .tableWrap table{min-width:0;table-layout:fixed}
+.stackTables td:first-child,.stackTables th:first-child{width:42%;white-space:normal}
+@media(min-width:1200px){
+  .tableWrap table th,.tableWrap table td{padding:12px 13px}
+}
+
+
+/* V1.2 readability-first visual upgrade: learn from clean data dashboards without sacrificing density */
+:root{
+  --bg:#f6f7fa;
+  --side:#ffffff;
+  --card:#ffffff;
+  --line:#e8edf2;
+  --text:#172033;
+  --muted:#7b8794;
+  --orange:#f59e0b;
+  --orange-bg:#fff7e8;
+  --green:#12b76a;
+  --red:#f04438;
+  --shadow:0 10px 28px rgba(15,23,42,.045);
+}
+body{background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;}
+.side{background:var(--side);border-right:1px solid #ebeff5;box-shadow:4px 0 18px rgba(15,23,42,.025);padding:24px 18px;}
+.brand{height:42px;margin-bottom:30px;font-weight:700;color:#172033;letter-spacing:.1px;}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#ffbd59,#f59e0b);color:#fff;font-weight:800;box-shadow:0 8px 18px rgba(245,158,11,.22);}
+.navTitle{font-size:12px;color:#98a2b3;margin:24px 0 8px;letter-spacing:.4px;}
+.navBtn{height:40px;border-radius:10px;font-size:14px;color:#667085;font-weight:500;padding:0 14px;}
+.navBtn.active{background:#fff4df;color:#b26b00;font-weight:700;box-shadow:inset 3px 0 0 #f59e0b;}
+.main{background:linear-gradient(180deg,#f7f8fb 0,#f4f6fa 100%);}
+.top{height:88px;padding:0 42px;border-bottom:1px solid rgba(232,237,242,.75);background:rgba(247,248,251,.9);backdrop-filter:blur(10px);position:sticky;top:0;z-index:5;}
+.title{font-size:28px;font-weight:750;letter-spacing:-.5px;color:#111827;}
+.time{font-size:13px;color:#98a2b3;font-weight:500;}
+.user{font-size:14px;color:#667085}.avatar{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #edf0f4;}
+.content{padding:28px 42px 44px;max-width:1440px;margin:0 auto;}
+.card{background:rgba(255,255,255,.96);border:1px solid #e9eef5;border-radius:18px;box-shadow:var(--shadow);padding:24px 28px;margin-bottom:22px;overflow:hidden;}
+.card h3{font-size:20px;font-weight:750;letter-spacing:-.2px;margin:0 0 8px;color:#162033;}
+.desc{font-size:13px;color:#7b8798;line-height:1.65;margin-bottom:18px;}
+.sectionMark:before{width:4px;height:18px;background:#f59e0b;box-shadow:0 4px 10px rgba(245,158,11,.22);}
+.metrics{gap:0}.metric{min-height:76px;padding:0 24px;border-color:#e8edf3;}
+.ml{font-size:13px;color:#7b8798;margin-bottom:9px}.mv{font-size:31px;font-weight:750;letter-spacing:-.5px;color:#152033;white-space:nowrap}.ms{font-size:12px;color:#98a2b3}.up{color:#f04438}.down{color:#12b76a}
+.toolbar,.splitHead{margin-bottom:18px}.splitHead{align-items:flex-start}.seg{gap:10px}.pill{height:36px;border-radius:999px;border-color:#e6ebf2;background:#fff;color:#667085;font-size:13px;font-weight:600;padding:0 16px;box-shadow:0 2px 6px rgba(15,23,42,.02)}.pill.active{background:#fff6e6;border-color:#f5b44b;color:#b26b00;box-shadow:0 5px 14px rgba(245,158,11,.10)}
+.btn{height:40px;border-radius:10px;background:#f59e0b;font-weight:700;box-shadow:0 8px 18px rgba(245,158,11,.18)}input,select{height:40px;border-color:#dfe6ef;border-radius:10px;color:#667085;background:#fff;}
+.tableWrap{overflow-x:hidden;border:1px solid #edf1f6;border-radius:14px;background:#fff;}
+table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;table-layout:auto;font-size:14px;color:#344054;}
+th{background:#f8fafc;color:#667085;font-weight:700;font-size:13px;padding:13px 14px;border-bottom:1px solid #e8edf3;white-space:nowrap;}
+td{padding:13px 14px;border-bottom:1px solid #edf1f6;vertical-align:middle;white-space:nowrap;line-height:1.45;}
+tbody tr:last-child td{border-bottom:0}.clickable:hover{background:#fffaf2}.highlight{color:#ea8500;font-weight:750;white-space:nowrap}.tag{font-weight:700;border:1px solid transparent}.tag.orange{background:#fff6e6;border-color:#ffe2ad;color:#c46e00}.tag.gray{background:#f2f4f7;color:#667085}.tag.green{background:#ecfdf3;color:#079455}.tag.blue{background:#eef4ff;color:#2f80ed}
+/* Preserve readability for high-density Chinese fund tables */
+.tableWrap td:first-child,.tableWrap th:first-child{min-width:170px;max-width:300px;}
+.tableWrap td:first-child{white-space:normal;word-break:keep-all;overflow-wrap:break-word;line-height:1.55;}
+.tableWrap td:not(:first-child),.tableWrap th:not(:first-child){white-space:nowrap;}
+.wrapCell{white-space:normal!important;line-height:1.55;min-width:220px;max-width:420px;word-break:normal;overflow-wrap:break-word;}
+.productCell{min-width:150px;max-width:220px;}
+/* Fund list has many columns: keep numeric values unbroken and names reasonably wide */
+.content .card .tableWrap table th:nth-child(1),.content .card .tableWrap table td:nth-child(1){min-width:190px;}
+.content .card .tableWrap table th:nth-child(5),.content .card .tableWrap table td:nth-child(5),
+.content .card .tableWrap table th:nth-child(7),.content .card .tableWrap table td:nth-child(7),
+.content .card .tableWrap table th:nth-child(8),.content .card .tableWrap table td:nth-child(8),
+.content .card .tableWrap table th:nth-child(9),.content .card .tableWrap table td:nth-child(9),
+.content .card .tableWrap table th:nth-child(10),.content .card .tableWrap table td:nth-child(10){white-space:nowrap;}
+.stackTables{gap:22px}.stackTables .tableWrap{box-shadow:none}.stackTables .tableWrap table{table-layout:auto;min-width:0}.stackTables td:first-child,.stackTables th:first-child{width:auto;min-width:280px;white-space:normal}.miniTitle{font-size:16px;font-weight:750;margin:6px 0 12px;color:#172033;}
+.notice{background:#fffaf0;border:1px solid #ffe1a6;border-radius:12px;color:#8a5a00;font-size:13px;margin-top:14px;}
+.tabs{height:58px;border:1px solid #edf1f6;border-radius:16px;box-shadow:var(--shadow);padding:0 26px}.tab{height:58px;font-size:15px;font-weight:650}.tab.active{color:#b26b00;border-bottom-color:#f59e0b}.dateRange{border-radius:12px;border-color:#edf1f6;box-shadow:0 6px 16px rgba(15,23,42,.035);}
+.chart{height:330px}.chart.sm{height:270px}.chartFrame{border:1px solid #edf1f6;border-radius:16px;background:linear-gradient(180deg,#fff 0,#fbfcfe 100%);padding:14px 14px 6px;margin-top:10px;}
+.controlPanel{gap:10px;margin:10px 0 16px}.controlPanel .controlBlock{border-color:#edf1f6;background:#fbfcfe;border-radius:14px;padding:10px 12px}.controlLabel{font-size:12px;color:#98a2b3;font-weight:700}.viewNote{color:#98a2b3;font-size:12px}
+.insightCard{background:linear-gradient(180deg,#fff 0,#fffdfa 100%)}.periodTag{background:#f2f4f7;color:#667085;border:1px solid #e8edf3}.insightMetric{border-radius:14px;background:#fbfcfe}.aiSummary{border-radius:14px;background:#fffaf0;border-color:#ffe1a6}.topicTag{background:#fff6e6;border:1px solid #ffe2ad;color:#b26b00;font-weight:700}.keywordTag{background:#f2f4f7;border:1px solid #e8edf3;color:#667085}.voiceCard{border-radius:14px;border-left:4px solid #f59e0b;background:#fbfcfe}.voiceText{font-size:13px;color:#344054}.insightNote{border-top:1px dashed #e8edf3;padding-top:10px}
+.subCard{border-radius:16px;border-color:#edf1f6;box-shadow:0 4px 14px rgba(15,23,42,.025)}.companyRow{background:#fff8ec!important}.companyRow td{color:#1f2a3d}.priority{background:#fff6e6;color:#b26b00;border:1px solid #ffe2ad;border-radius:999px;font-size:11px}
+/* Avoid global horizontal scroll while keeping tables readable */
+html,body,.app,.main{overflow-x:hidden;}
+@media(max-width:1280px){.content{padding-left:28px;padding-right:28px}.tableWrap{overflow-x:auto}.tableWrap table{min-width:980px}.stackTables .tableWrap table{min-width:720px}}
+
+
+
+/* =========================================================
+   Xiaobei Fund Marketing Dashboard V1.2
+   Design System Consolidation Layer
+   Goal: unified, readable, restrained B-side data product UI
+   ========================================================= */
+:root{
+  --bg:#F6F8FB;
+  --side:#FFFFFF;
+  --card:#FFFFFF;
+  --line:#E8EDF3;
+  --line-soft:#EEF2F7;
+  --text:#172033;
+  --text-2:#334155;
+  --muted:#64748B;
+  --muted-2:#94A3B8;
+  --orange:#F59E0B;
+  --orange-bg:#FFF7E8;
+  --orange-border:#FCD79B;
+  --orange-text:#B45309;
+  --red:#F04438;
+  --green:#12B76A;
+  --blue:#4F7DFF;
+  --shadow-card:0 8px 24px rgba(15,23,42,.045);
+  --radius-card:18px;
+  --radius-control:12px;
+}
+html,body{background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif;font-size:14px;overflow-x:hidden;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;}
+.app{background:var(--bg)}
+.side{width:232px;background:var(--side);border-right:1px solid var(--line);padding:24px 16px;box-shadow:4px 0 22px rgba(15,23,42,.025)}
+.brand{height:44px;margin-bottom:30px;font-size:18px;font-weight:800;color:#1D2939;letter-spacing:.1px}.logo{width:32px;height:32px;border-radius:11px;background:linear-gradient(135deg,#FFB84D,#F59E0B);color:#fff;box-shadow:0 8px 18px rgba(245,158,11,.22)}
+.navTitle{font-size:12px;line-height:1;margin:24px 10px 10px;color:var(--muted-2);font-weight:700;letter-spacing:.6px}.navBtn{height:42px;border-radius:12px;padding:0 14px;color:var(--muted);font-size:14px;font-weight:650;margin:4px 0;transition:.18s ease}.navBtn:hover{background:#F8FAFC;color:var(--text)}.navBtn.active{background:var(--orange-bg);color:var(--orange-text);box-shadow:inset 0 0 0 1px var(--orange-border)}
+.main{margin-left:232px;width:calc(100vw - 232px);min-width:0}.top{height:92px;padding:0 38px}.title{font-size:28px;font-weight:800;letter-spacing:-.4px;color:var(--text)}.time{font-size:13px;color:var(--muted-2);margin-left:16px}.user{font-size:14px;color:var(--muted);font-weight:600}.avatar{width:40px;height:40px;border-radius:12px;background:var(--orange-bg);color:var(--orange-text);font-weight:800}
+.content{padding:0 38px 44px;max-width:1480px;margin:0 auto}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:24px;margin-bottom:22px}.card h3{font-size:18px;font-weight:800;margin:0 0 6px;color:var(--text)}.desc{font-size:13px;color:var(--muted);line-height:1.65;margin:0 0 16px}.sectionMark:before{width:4px;height:17px;background:var(--orange);border-radius:999px}.miniTitle{font-size:16px;font-weight:800;margin:4px 0 12px;color:var(--text)}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}.metrics.five{grid-template-columns:repeat(5,minmax(0,1fr));gap:0}.metrics.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:0}.metric{min-height:84px;padding:2px 22px;border-right:1px solid var(--line-soft)}.metric:first-child{padding-left:0}.metric:last-child{border-right:0}.ml{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px}.mv{font-size:30px;font-weight:800;letter-spacing:-.6px;color:var(--text);white-space:nowrap}.ms{font-size:12px;color:var(--muted-2);margin-top:8px}.up{color:var(--red)}.down{color:var(--green)}
+.toolbar,.splitHead{gap:18px;margin-bottom:16px}.leftTools,.rightTools,.seg{gap:8px}.btn{height:36px;border-radius:10px;background:var(--orange);font-size:13px;font-weight:700;box-shadow:0 6px 14px rgba(245,158,11,.16)}.btn.light,input,select,.dateRange{height:36px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--muted);font-size:13px;box-shadow:none}.dateRange{height:auto;padding:9px 14px;white-space:nowrap}.pill{height:34px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;font-weight:650;padding:0 13px}.pill.active{background:var(--orange-bg);border-color:var(--orange-border);color:var(--orange-text)}.tabs{height:58px;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-card);padding:0 24px}.tab{height:58px;font-size:15px;font-weight:750}.tab.active{color:var(--orange-text);border-bottom-color:var(--orange)}
+.tableWrap{width:100%;max-width:100%;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#fff}table{width:100%;min-width:0;border-collapse:separate;border-spacing:0;table-layout:auto;font-size:14px;color:var(--text-2)}th{background:#F8FAFC;color:var(--muted);font-size:13px;font-weight:750;padding:12px 14px;border-bottom:1px solid var(--line-soft);white-space:nowrap}td{padding:13px 14px;border-bottom:1px solid var(--line-soft);line-height:1.45;color:var(--text-2);vertical-align:middle}tbody tr:last-child td{border-bottom:0}tr.clickable:hover{background:#FFFDF8}.highlight{color:var(--orange-text);font-weight:800}.tag{border-radius:999px;padding:4px 9px;font-size:12px;font-weight:750;white-space:nowrap}.tag.orange{background:var(--orange-bg);color:var(--orange-text);border:1px solid var(--orange-border)}.tag.green{background:#ECFDF3;color:#067647}.tag.blue{background:#EEF4FF;color:#355CD7}.tag.gray{background:#F2F4F7;color:var(--muted)}
+.tableWrap th:first-child,.tableWrap td:first-child{min-width:190px}.tableWrap td:first-child{white-space:normal;word-break:keep-all;overflow-wrap:break-word}.tableWrap th:not(:first-child),.tableWrap td:not(:first-child){white-space:nowrap}.wrapCell{white-space:normal!important;line-height:1.55;min-width:220px;max-width:420px}.productCell{min-width:160px;max-width:260px}.stackTables{display:grid;grid-template-columns:1fr;gap:20px}.stackTables .tableWrap table{min-width:0}.stackTables .tableWrap td:first-child,.stackTables .tableWrap th:first-child{min-width:260px;max-width:none;white-space:normal}.content .card .tableWrap td:nth-last-child(1),.content .card .tableWrap th:nth-last-child(1){white-space:nowrap}.content .card .tableWrap td:nth-child(n+4):not(.wrapCell):not(.productCell){text-align:right}.content .card .tableWrap th:nth-child(n+4):not(:last-child){text-align:right}.companyRow{background:#FFF8EC!important}.companyRow td{font-weight:750}.rankSep td{text-align:center;background:#FFF8EC;color:var(--orange-text);font-weight:800}
+.grid{gap:20px}.chart{height:330px;width:100%}.chart.sm{height:270px}.chartFrame{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff 0,#FBFCFE 100%);padding:14px 14px 6px;margin-top:10px}.controlPanel{display:flex;flex-direction:column;gap:10px;margin:10px 0 16px}.controlPanel .controlBlock{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#FBFCFE;border:1px solid var(--line);border-radius:14px;padding:10px 12px}.controlLabel{font-size:12px;color:var(--muted-2);font-weight:800}.viewNote{font-size:12px;color:var(--muted-2)}
+.notice{background:#FFFAF0;border:1px solid #FFE1A6;border-radius:12px;color:#8A5A00;font-size:12px;line-height:1.65;margin-top:14px;padding:10px 14px}.hintBox{background:#FBFCFE;border:1px dashed var(--line);border-radius:12px;color:var(--muted);font-size:13px}.subCard{border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(15,23,42,.025);background:#fff}.subCard h4{font-size:16px;font-weight:800;color:var(--text)}
+.insightCard{background:linear-gradient(180deg,#FFFFFF 0,#FFFDFC 100%)}.insightHead{margin-bottom:14px}.periodTag{background:#F2F4F7;border:1px solid var(--line);color:var(--muted);font-weight:700}.insightMetric{border:1px solid var(--line);border-radius:14px;background:#FBFCFE}.insightMetric .k{color:var(--muted-2);font-weight:650}.insightMetric .v{font-weight:850;color:var(--text)}.aiSummary{background:#FFFAF0;border:1px solid #FFE1A6;border-radius:14px;color:#5F3B00;line-height:1.7}.topicTag{background:#FFF6E6;border:1px solid #FFE2AD;color:var(--orange-text);font-weight:750}.keywordTag{background:#F2F4F7;border:1px solid var(--line);color:var(--muted);font-weight:650}.voiceCard{border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:14px;background:#FBFCFE}.voiceText{font-size:13px;line-height:1.75;color:#344054}.insightNote{border-top:1px dashed var(--line);padding-top:10px;color:var(--muted-2)}
+.crumb{margin-bottom:16px}.back{font-size:13px;color:var(--muted);font-weight:700}.priority{background:#FFF6E6;color:var(--orange-text);border:1px solid #FFE2AD;border-radius:999px;font-size:11px;font-weight:800}.compareGrid{gap:18px}.compareCard{border:1px solid var(--line);border-radius:16px;background:#FBFCFE}.compareItem{border:1px solid var(--line-soft);box-shadow:none}.realtimeGrid{gap:12px}.realtimeItem{border-color:var(--line);border-radius:14px}.realtimeItem .v{font-weight:850;white-space:nowrap}
+@media(max-width:1320px){.content{padding-left:30px;padding-right:30px}.metrics.five{grid-template-columns:repeat(5,minmax(0,1fr))}.mv{font-size:26px}.tableWrap{overflow-x:auto}.tableWrap table{min-width:980px}.stackTables .tableWrap table{min-width:720px}}
+@media(max-width:1100px){.metrics,.metrics.five,.metrics.three{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.metric{border-right:0;padding:0}.dual,.compareGrid{grid-template-columns:1fr}.s12,.s8,.s7,.s6,.s5,.s4{grid-column:span 12}.side{width:212px}.main{margin-left:212px;width:calc(100vw - 212px)}}
+
+
+
+/* === V1.2 高保真图落地版：只统一视觉系统，不改变结构与字段 === */
+:root{
+  --xb-bg:#f4f6fa;
+  --xb-side:#ffffff;
+  --xb-card:#ffffff;
+  --xb-line:#e7edf4;
+  --xb-line-soft:#eef2f7;
+  --xb-text:#172033;
+  --xb-text-2:#334155;
+  --xb-muted:#64748b;
+  --xb-muted-2:#98a2b3;
+  --xb-orange:#f59e0b;
+  --xb-orange-bg:#fff7e8;
+  --xb-orange-line:#f7d79b;
+  --xb-orange-text:#b45309;
+  --xb-red:#f04438;
+  --xb-green:#12b76a;
+  --xb-blue:#4f7dff;
+  --xb-shadow:0 12px 30px rgba(15,23,42,.055);
+  --xb-radius:20px;
+}
+*{box-sizing:border-box}
+html,body{background:var(--xb-bg)!important;color:var(--xb-text)!important;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif!important;overflow-x:hidden;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;}
+.app{background:var(--xb-bg)!important;}
+.side{width:236px!important;background:var(--xb-side)!important;border-right:1px solid var(--xb-line)!important;padding:24px 18px!important;box-shadow:6px 0 28px rgba(15,23,42,.025)!important;}
+.brand{height:46px!important;margin-bottom:30px!important;font-size:18px!important;font-weight:800!important;color:var(--xb-text)!important;letter-spacing:.1px!important;}
+.logo{width:34px!important;height:34px!important;border-radius:12px!important;background:linear-gradient(135deg,#ffb84d 0%,#f59e0b 100%)!important;color:#fff!important;font-weight:900!important;box-shadow:0 10px 22px rgba(245,158,11,.24)!important;}
+.navTitle{font-size:12px!important;line-height:1!important;margin:24px 10px 10px!important;color:var(--xb-muted-2)!important;font-weight:800!important;letter-spacing:.6px!important;}
+.navBtn{height:42px!important;border-radius:13px!important;padding:0 14px!important;color:var(--xb-muted)!important;font-size:14px!important;font-weight:700!important;margin:4px 0!important;transition:all .18s ease!important;}
+.navBtn:hover{background:#f8fafc!important;color:var(--xb-text)!important;}
+.navBtn.active{background:var(--xb-orange-bg)!important;color:var(--xb-orange-text)!important;box-shadow:inset 0 0 0 1px var(--xb-orange-line)!important;}
+.main{margin-left:236px!important;width:calc(100vw - 236px)!important;min-width:0!important;}
+.top{height:92px!important;padding:0 40px!important;background:rgba(244,246,250,.92)!important;backdrop-filter:blur(8px)!important;}
+.title{font-size:28px!important;font-weight:850!important;letter-spacing:-.4px!important;color:var(--xb-text)!important;}
+.time{font-size:13px!important;color:var(--xb-muted-2)!important;margin-left:16px!important;}
+.user{font-size:14px!important;color:var(--xb-muted)!important;font-weight:700!important;}
+.avatar{width:40px!important;height:40px!important;border-radius:13px!important;background:var(--xb-orange-bg)!important;color:var(--xb-orange-text)!important;font-weight:850!important;}
+.content{padding:0 40px 48px!important;max-width:1500px!important;margin:0 auto!important;}
+.card{background:var(--xb-card)!important;border:1px solid var(--xb-line)!important;border-radius:var(--xb-radius)!important;box-shadow:var(--xb-shadow)!important;padding:24px!important;margin-bottom:22px!important;overflow:hidden!important;}
+.card h3{font-size:18px!important;font-weight:850!important;margin:0 0 6px!important;color:var(--xb-text)!important;letter-spacing:-.1px!important;}
+.desc{font-size:13px!important;color:var(--xb-muted)!important;line-height:1.65!important;margin:0 0 16px!important;}
+.sectionMark{display:inline-flex!important;align-items:center!important;gap:9px!important;}
+.sectionMark:before{content:""!important;width:4px!important;height:18px!important;background:var(--xb-orange)!important;border-radius:999px!important;display:inline-block!important;}
+.metrics,.metrics.five,.metrics.three{display:grid!important;gap:14px!important;}
+.metrics{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+.metrics.five{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+.metrics.three{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+.metric{position:relative!important;min-height:92px!important;padding:16px 18px!important;border:1px solid var(--xb-line-soft)!important;border-radius:16px!important;background:linear-gradient(180deg,#ffffff 0%,#fbfcff 100%)!important;box-shadow:0 6px 18px rgba(15,23,42,.025)!important;overflow:hidden!important;}
+.metric:after{content:"";position:absolute;left:18px;right:18px;bottom:0;height:3px;border-radius:999px;background:linear-gradient(90deg,rgba(245,158,11,.85),rgba(79,125,255,.25));opacity:.85;}
+.metric:first-child{padding-left:18px!important;}
+.metric:last-child{border-right:1px solid var(--xb-line-soft)!important;}
+.ml{font-size:13px!important;color:var(--xb-muted)!important;font-weight:700!important;margin-bottom:8px!important;}
+.mv{font-size:29px!important;line-height:1.05!important;font-weight:850!important;letter-spacing:-.7px!important;color:var(--xb-text)!important;white-space:nowrap!important;}
+.ms{font-size:12px!important;color:var(--xb-muted-2)!important;margin-top:8px!important;font-weight:650!important;}
+.up{color:var(--xb-red)!important}.down{color:var(--xb-green)!important}
+.toolbar,.splitHead{gap:18px!important;margin-bottom:16px!important;align-items:flex-start!important;}
+.leftTools,.rightTools,.seg{gap:8px!important;}
+.btn{height:36px!important;border-radius:11px!important;background:var(--xb-orange)!important;font-size:13px!important;font-weight:750!important;box-shadow:0 6px 14px rgba(245,158,11,.16)!important;}
+.btn.light,input,select,.dateRange{height:36px!important;border:1px solid var(--xb-line)!important;border-radius:11px!important;background:#fff!important;color:var(--xb-muted)!important;font-size:13px!important;box-shadow:none!important;}
+.dateRange{height:auto!important;padding:9px 14px!important;white-space:nowrap!important;}
+.pill{height:34px!important;border-radius:999px!important;border:1px solid var(--xb-line)!important;background:#fff!important;color:var(--xb-muted)!important;font-size:13px!important;font-weight:700!important;padding:0 13px!important;}
+.pill.active{background:var(--xb-orange-bg)!important;border-color:var(--xb-orange-line)!important;color:var(--xb-orange-text)!important;}
+.tabs{height:58px!important;border:1px solid var(--xb-line)!important;border-radius:16px!important;box-shadow:var(--xb-shadow)!important;padding:0 24px!important;background:#fff!important;}
+.tab{height:58px!important;font-size:15px!important;font-weight:800!important;color:var(--xb-muted)!important;}
+.tab.active{color:var(--xb-orange-text)!important;border-bottom-color:var(--xb-orange)!important;}
+.tableWrap{width:100%!important;max-width:100%!important;overflow:hidden!important;border:1px solid var(--xb-line)!important;border-radius:15px!important;background:#fff!important;box-shadow:0 4px 16px rgba(15,23,42,.018)!important;}
+table{width:100%!important;min-width:0!important;border-collapse:separate!important;border-spacing:0!important;table-layout:auto!important;font-size:14px!important;color:var(--xb-text-2)!important;}
+th{background:#f8fafc!important;color:var(--xb-muted)!important;font-size:13px!important;font-weight:800!important;padding:12px 14px!important;border-bottom:1px solid var(--xb-line-soft)!important;white-space:nowrap!important;}
+td{padding:13px 14px!important;border-bottom:1px solid var(--xb-line-soft)!important;line-height:1.46!important;color:var(--xb-text-2)!important;vertical-align:middle!important;}
+tbody tr:last-child td{border-bottom:0!important;}
+tr.clickable:hover{background:#fffdf8!important;}
+.highlight{color:var(--xb-orange-text)!important;font-weight:850!important;}
+.tag{border-radius:999px!important;padding:4px 9px!important;font-size:12px!important;font-weight:800!important;white-space:nowrap!important;}
+.tag.orange{background:var(--xb-orange-bg)!important;color:var(--xb-orange-text)!important;border:1px solid var(--xb-orange-line)!important;}
+.tag.green{background:#ecfdf3!important;color:#067647!important}.tag.blue{background:#eef4ff!important;color:#355cd7!important}.tag.gray{background:#f2f4f7!important;color:var(--xb-muted)!important;}
+.tableWrap th:first-child,.tableWrap td:first-child{min-width:190px!important;}
+.tableWrap td:first-child{white-space:normal!important;word-break:keep-all!important;overflow-wrap:break-word!important;}
+.tableWrap th:not(:first-child),.tableWrap td:not(:first-child){white-space:nowrap!important;}
+.wrapCell{white-space:normal!important;line-height:1.55!important;min-width:220px!important;max-width:420px!important;}
+.productCell{min-width:160px!important;max-width:260px!important;}
+.stackTables{display:grid!important;grid-template-columns:1fr!important;gap:22px!important;}
+.stackTables .tableWrap table{min-width:0!important;}
+.stackTables .tableWrap td:first-child,.stackTables .tableWrap th:first-child{min-width:270px!important;max-width:none!important;white-space:normal!important;}
+.content .card .tableWrap td:nth-child(n+4):not(.wrapCell):not(.productCell){text-align:right!important;}
+.content .card .tableWrap th:nth-child(n+4):not(:last-child){text-align:right!important;}
+.companyRow{background:#fff8ec!important}.companyRow td{font-weight:800!important}.rankSep td{text-align:center!important;background:#fff8ec!important;color:var(--xb-orange-text)!important;font-weight:850!important;}
+.miniTitle{font-size:16px!important;font-weight:850!important;margin:8px 0 12px!important;color:var(--xb-text)!important;}
+.grid{gap:20px!important}.chart{height:335px!important;width:100%!important}.chart.sm{height:270px!important;}
+.chartFrame{border:1px solid var(--xb-line)!important;border-radius:17px!important;background:linear-gradient(180deg,#fff 0,#fbfcfe 100%)!important;padding:14px 14px 6px!important;margin-top:10px!important;}
+.controlPanel{display:flex!important;flex-direction:column!important;gap:10px!important;margin:10px 0 16px!important;}
+.controlPanel .controlBlock{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;background:#fbfcfe!important;border:1px solid var(--xb-line)!important;border-radius:15px!important;padding:10px 12px!important;}
+.controlLabel{font-size:12px!important;color:var(--xb-muted-2)!important;font-weight:850!important;}
+.viewNote{font-size:12px!important;color:var(--xb-muted-2)!important;}
+.notice{background:#fffaf0!important;border:1px solid #ffe1a6!important;border-radius:13px!important;color:#8a5a00!important;font-size:12px!important;line-height:1.65!important;margin-top:14px!important;padding:10px 14px!important;}
+.hintBox{background:#fbfcfe!important;border:1px dashed var(--xb-line)!important;border-radius:13px!important;color:var(--xb-muted)!important;font-size:13px!important;}
+.subCard{border:1px solid var(--xb-line)!important;border-radius:17px!important;box-shadow:0 4px 14px rgba(15,23,42,.025)!important;background:#fff!important;}
+.subCard h4{font-size:16px!important;font-weight:850!important;color:var(--xb-text)!important;}
+.insightCard{background:linear-gradient(180deg,#fff 0,#fffdf9 100%)!important;border-color:#f0e6d3!important;}
+.insightCard .insightShell{padding:22px!important;}
+.insightHead{margin-bottom:14px!important;border-bottom:1px solid var(--xb-line-soft)!important;padding-bottom:14px!important;}
+.insightHead h3:before{background:var(--xb-orange)!important;}
+.periodTag{background:#f2f4f7!important;border:1px solid var(--xb-line)!important;color:var(--xb-muted)!important;font-weight:800!important;}
+.insightMetric{border:1px solid var(--xb-line)!important;border-radius:15px!important;background:#fbfcfe!important;}
+.insightMetric .k{color:var(--xb-muted-2)!important;font-weight:700!important}.insightMetric .v{font-weight:900!important;color:var(--xb-text)!important;}
+.aiSummary{background:#fffaf0!important;border:1px solid #ffe1a6!important;border-radius:15px!important;color:#5f3b00!important;line-height:1.7!important;}
+.topicTag{background:#fff6e6!important;border:1px solid #ffe2ad!important;color:var(--xb-orange-text)!important;font-weight:800!important;}
+.keywordTag{background:#f2f4f7!important;border:1px solid var(--xb-line)!important;color:var(--xb-muted)!important;font-weight:700!important;}
+.voiceCard{border:1px solid var(--xb-line)!important;border-left:4px solid var(--xb-orange)!important;border-radius:15px!important;background:#fbfcfe!important;}
+.voiceText{font-size:13px!important;line-height:1.75!important;color:#344054!important;}
+.insightNote{border-top:1px dashed var(--xb-line)!important;padding-top:10px!important;color:var(--xb-muted-2)!important;}
+.crumb{margin-bottom:16px!important}.back{font-size:13px!important;color:var(--xb-muted)!important;font-weight:800!important;}
+.priority{background:#fff6e6!important;color:var(--xb-orange-text)!important;border:1px solid #ffe2ad!important;border-radius:999px!important;font-size:11px!important;font-weight:850!important;}
+.compareGrid{gap:18px!important}.compareCard{border:1px solid var(--xb-line)!important;border-radius:17px!important;background:#fbfcfe!important}.compareItem{border:1px solid var(--xb-line-soft)!important;box-shadow:none!important;}
+.realtimeGrid{gap:12px!important}.realtimeItem{border-color:var(--xb-line)!important;border-radius:15px!important}.realtimeItem .v{font-weight:900!important;white-space:nowrap!important;}
+@media(max-width:1360px){.content{padding-left:30px!important;padding-right:30px!important}.mv{font-size:26px!important}.tableWrap{overflow-x:auto!important}.tableWrap table{min-width:980px!important}.stackTables .tableWrap table{min-width:760px!important}}
+@media(max-width:1180px){.metrics,.metrics.five,.metrics.three{grid-template-columns:repeat(2,minmax(0,1fr))!important}.side{width:216px!important}.main{margin-left:216px!important;width:calc(100vw - 216px)!important}.dual,.compareGrid{grid-template-columns:1fr!important}.s12,.s8,.s7,.s6,.s5,.s4{grid-column:span 12!important}}
+
+
+
+/* V1.2.1 feedback fixes */
+.opportunityTable table{table-layout:fixed!important;min-width:0!important;width:100%!important}
+.opportunityTable th,.opportunityTable td{height:56px!important;padding:12px 14px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;vertical-align:middle!important}
+.opportunityTable th:nth-child(1),.opportunityTable td:nth-child(1){width:20%!important}
+.opportunityTable th:nth-child(2),.opportunityTable td:nth-child(2){width:8%!important;text-align:right!important}
+.opportunityTable th:nth-child(3),.opportunityTable td:nth-child(3){width:8%!important;text-align:center!important}
+.opportunityTable th:nth-child(4),.opportunityTable td:nth-child(4){width:31%!important}
+.opportunityTable th:nth-child(5),.opportunityTable td:nth-child(5){width:8%!important;text-align:center!important}
+.opportunityTable th:nth-child(6),.opportunityTable td:nth-child(6){width:25%!important}
+.boardCell{font-weight:800;color:#172033;white-space:nowrap!important;line-height:1.4!important}
+.boardCell .tag{margin-left:8px;font-weight:700;vertical-align:middle}
+.opportunityTable .productCell{white-space:nowrap!important;max-width:none!important;min-width:0!important;color:#334155!important}
+.opportunityTable .triggerCell{color:#475569!important}
+.top5Compare{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;width:100%}
+.top5Box{border:1px solid #edf1f5;border-radius:14px;background:#fbfcfe;padding:14px;min-width:0;overflow:hidden}
+.top5Box .tableWrap{overflow:hidden!important;width:100%}
+.top5Box .tableWrap table{min-width:0!important;width:100%!important;table-layout:fixed!important;background:#fff;border-radius:10px;overflow:hidden;font-size:13px!important}
+.top5Box th,.top5Box td{padding:12px 8px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.top5Box th:nth-child(1),.top5Box td:nth-child(1){width:42px!important;text-align:center!important}
+.top5Box th:nth-child(2),.top5Box td:nth-child(2){width:auto!important;min-width:0!important}
+.top5Box th:nth-child(3),.top5Box td:nth-child(3){width:64px!important;text-align:center!important}
+.top5Box th:nth-child(4),.top5Box td:nth-child(4){width:68px!important;text-align:center!important}
+.fieldNotes{margin-top:18px;color:#8a95a6;font-size:12px;line-height:1.8;background:transparent;border-top:1px dashed #e4e7ec;padding-top:12px}
+.fieldNotes b{color:#667085;margin-right:8px}
+.fieldNotes span{margin-right:18px;display:inline-block}
+@media(max-width:1400px){.top5Compare{grid-template-columns:1fr}.opportunityTable table{min-width:980px!important}}
+
+
+/* === V1.2.1 UI Score Upgrade v3：提分层，只改视觉与排版，不改业务结构 === */
+:root{
+  --ui-bg:#F5F7FA;
+  --ui-card:#FFFFFF;
+  --ui-line:#E7ECF3;
+  --ui-soft:#F8FAFC;
+  --ui-text:#162033;
+  --ui-sub:#667085;
+  --ui-weak:#98A2B3;
+  --ui-orange:#F59E0B;
+  --ui-orange-bg:#FFF7E8;
+  --ui-orange-line:#F6D79B;
+  --ui-orange-text:#B45309;
+}
+html,body{background:var(--ui-bg)!important;}
+.side{width:228px!important;padding:22px 15px!important;}
+.main{margin-left:228px!important;width:calc(100vw - 228px)!important;}
+.top{height:80px!important;padding:0 34px!important;background:var(--ui-bg)!important;}
+.title{font-size:26px!important;font-weight:850!important;}
+.time{font-size:12px!important;color:var(--ui-weak)!important;}
+.content{padding:0 34px 38px!important;max-width:1540px!important;}
+.card{border-radius:18px!important;padding:20px!important;margin-bottom:18px!important;box-shadow:0 8px 22px rgba(15,23,42,.038)!important;}
+.card h3{font-size:17px!important;margin-bottom:4px!important;}
+.desc{margin-bottom:14px!important;font-size:12.5px!important;line-height:1.55!important;color:var(--ui-sub)!important;}
+.splitHead{margin-bottom:12px!important;align-items:center!important;}
+.metric{min-height:78px!important;padding:14px 15px!important;border-radius:14px!important;box-shadow:none!important;background:#fff!important;}
+.metric:after{display:none!important;}
+.ml{font-size:12.5px!important;margin-bottom:7px!important;}
+.mv{font-size:26px!important;line-height:1.08!important;letter-spacing:-.55px!important;}
+.ms{font-size:11.5px!important;margin-top:7px!important;}
+.metrics,.metrics.five,.metrics.three{gap:10px!important;}
+.metrics.five{grid-template-columns:repeat(5,minmax(0,1fr))!important;}
+.pill{height:30px!important;padding:0 11px!important;font-size:12.5px!important;font-weight:750!important;}
+.seg{gap:6px!important;}
+.notice{margin-top:10px!important;padding:9px 12px!important;border-radius:11px!important;font-size:12px!important;line-height:1.55!important;background:#FFFBF3!important;}
+.tableWrap{border-radius:13px!important;box-shadow:none!important;overflow:hidden!important;}
+th{padding:10px 12px!important;font-size:12.5px!important;height:40px!important;}
+td{padding:10px 12px!important;font-size:13.2px!important;line-height:1.38!important;}
+.tag{font-size:11.5px!important;padding:3px 8px!important;}
+
+/* 板块机会观察：一行展示 + 最热关联产品优先 */
+.opportunityTable table{table-layout:fixed!important;width:100%!important;min-width:0!important;}
+.opportunityTable th,.opportunityTable td{height:48px!important;max-height:48px!important;padding:9px 10px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+.opportunityTable th:nth-child(1),.opportunityTable td:nth-child(1){width:20%!important;text-align:left!important;}
+.opportunityTable th:nth-child(2),.opportunityTable td:nth-child(2){width:8%!important;text-align:right!important;}
+.opportunityTable th:nth-child(3),.opportunityTable td:nth-child(3){width:8%!important;text-align:center!important;}
+.opportunityTable th:nth-child(4),.opportunityTable td:nth-child(4){width:30%!important;text-align:left!important;}
+.opportunityTable th:nth-child(5),.opportunityTable td:nth-child(5){width:8%!important;text-align:center!important;}
+.opportunityTable th:nth-child(6),.opportunityTable td:nth-child(6){width:26%!important;text-align:left!important;}
+.boardCell{font-size:13.2px!important;}
+.boardCell .tag{margin-left:6px!important;}
+.opportunityTable .triggerCell{font-size:12.5px!important;color:#526174!important;}
+.opportunityTable .productCell{font-weight:750!important;color:#243044!important;}
+
+/* 今日基金行为对照：左右同排 + 名称列优先 */
+.top5Compare{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:12px!important;}
+.top5Box{padding:12px!important;border-radius:14px!important;background:#FBFCFE!important;border:1px solid var(--ui-line)!important;min-width:0!important;}
+.top5Box .miniTitle{font-size:14px!important;margin:0 0 9px!important;}
+.top5Box .tableWrap table{table-layout:fixed!important;width:100%!important;min-width:0!important;font-size:12.5px!important;}
+.top5Box th,.top5Box td{padding:9px 5px!important;font-size:12.5px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;height:38px!important;}
+.top5Box th:first-child,.top5Box td:first-child{min-width:0!important;width:30px!important;text-align:center!important;}
+.top5Box th:nth-child(2),.top5Box td:nth-child(2){width:auto!important;min-width:0!important;text-align:left!important;color:#243044!important;font-weight:720!important;}
+.top5Box th:nth-child(3),.top5Box td:nth-child(3){width:54px!important;text-align:center!important;color:#667085!important;}
+.top5Box th:nth-child(4),.top5Box td:nth-child(4){width:58px!important;text-align:center!important;color:#667085!important;}
+.top5Box .highlight{color:var(--ui-orange-text)!important;}
+
+/* 图表与控件：减少默认插件感 */
+.chart{height:308px!important;}
+.chart.sm{height:248px!important;}
+.controlPanel{gap:8px!important;margin:8px 0 12px!important;}
+.controlPanel .controlBlock{padding:8px 10px!important;border-radius:12px!important;background:#FFFFFF!important;}
+.controlLabel{font-size:11.5px!important;}
+.tabs{height:50px!important;border-radius:14px!important;padding:0 18px!important;margin-bottom:15px!important;}
+.tab{height:50px!important;font-size:14px!important;}
+.crumb{margin-bottom:12px!important;}
+.dateRange{padding:8px 12px!important;font-size:12px!important;border-radius:10px!important;}
+
+/* 底部字段说明：弱化，不喧宾夺主 */
+.fieldNotes{margin-top:14px!important;padding-top:10px!important;border-top:1px dashed #DFE6EF!important;color:#98A2B3!important;font-size:11.5px!important;line-height:1.7!important;}
+.fieldNotes b{color:#667085!important;font-weight:750!important;}
+.fieldNotes span{margin-right:14px!important;}
+
+/* 大屏约束：1440 宽度下不横向滚动；左右表不提前折叠 */
+@media(max-width:1180px){.top5Compare{grid-template-columns:1fr!important;}}
+@media(max-width:1280px){.content{padding-left:28px!important;padding-right:28px!important}.mv{font-size:23px!important}.metric{padding:12px!important}.opportunityTable table{min-width:920px!important}.opportunityTable .tableWrap{overflow-x:auto!important}}
+
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><div class="logo">小</div><span>小倍数据</span></div>
+  <div class="navTitle">▥ 营销工作台</div>
+  <button class="navBtn active" id="nav-dashboard" onclick="go('dashboard')">今日看板</button>
+  <div class="navTitle">▥ 基金数据</div>
+  <button class="navBtn" id="nav-fund" onclick="go('fundList')">基金监控</button>
+  <button class="navBtn" id="nav-sector" onclick="go('sectorList')">板块监控</button>
+</aside>
+<main class="main">
+  <header class="top">
+    <div><span class="title" id="pageTitle">今日看板</span><span class="time">2026-06-09 15:48:26</span></div>
+    <div class="user"><div class="avatar">企</div>基金公司演示账号</div>
+  </header>
+  <section class="content" id="app"></section>
+</main>
+</div>
+
+<script>
+const app=document.getElementById('app');
+let state={page:'dashboard',scope:'company',dashMetric:'addUsers',boardPeriod:'today',boardType:'gain',fundCode:'025209',fundTab:'holder',fundHolderMetric:'holdUsers',behaviorMetric:'heat',tradeMetric:'addUsers',tradePeriod:'minute',behaviorPeriod:'minute',sector:'半导体',sectorView:'heat',sectorPeriod:'minute'};
+
+const funds=[
+{code:'025209',name:'永赢先锋半导体智选C',sector:'半导体',holdUsers:'72.39万',holdAmount:'230.27亿',watchUsers:'1,364',addUsers:'6,874',addAmount:'1,520万',reduceUsers:'2,961',investUsers:'1,238',favUsers:'1,254',heat:'4,791.83万',avgProfit:'22.18%',profitRatio:'89.21%',positive:'71.4%',dynamic:'4,791'},
+{code:'161226',name:'国投瑞银白银期货(LOF)A',sector:'贵金属',holdUsers:'122.11万',holdAmount:'54.77亿',watchUsers:'2,305',addUsers:'1,582',addAmount:'1,286万',reduceUsers:'1,024',investUsers:'582',favUsers:'386',heat:'505.56万',avgProfit:'-2.90%',profitRatio:'9.66%',positive:'58.2%',dynamic:'1,485'},
+{code:'017811',name:'东方人工智能主题混合C',sector:'AI算力',holdUsers:'56.64万',holdAmount:'651.62亿',watchUsers:'1,926',addUsers:'5,131',addAmount:'3,585万',reduceUsers:'2,246',investUsers:'1,506',favUsers:'1,562',heat:'6,335.08万',avgProfit:'13.49%',profitRatio:'84.43%',positive:'77.2%',dynamic:'6,335'},
+{code:'015790',name:'永赢高端装备智选混合发起C',sector:'高端制造',holdUsers:'69.84万',holdAmount:'159.06亿',watchUsers:'1,004',addUsers:'2,901',addAmount:'1,246万',reduceUsers:'1,883',investUsers:'836',favUsers:'968',heat:'2,521.58万',avgProfit:'-5.67%',profitRatio:'13.99%',positive:'49.1%',dynamic:'2,521'},
+{code:'018125',name:'永赢先进制造智选混合发起C',sector:'高端制造',holdUsers:'65.06万',holdAmount:'146.87亿',watchUsers:'1,281',addUsers:'2,634',addAmount:'1,168万',reduceUsers:'1,106',investUsers:'792',favUsers:'1,036',heat:'4,023.80万',avgProfit:'5.81%',profitRatio:'51.73%',positive:'63.5%',dynamic:'4,023'}
+];
+const marketTop={
+addUsers:[['永赢先锋半导体智选C','025209','半导体','6,874'],['东方人工智能主题混合C','017811','AI算力','5,131'],['华夏中证机器人ETF','159551','机器人','4,362'],['国联安中证半导体ETF','512480','半导体','5,986'],['永赢高端装备智选混合发起C','015790','高端制造','2,901']],
+addAmount:[['东方人工智能主题混合C','017811','AI算力','3,585万'],['华夏中证机器人ETF','159551','机器人','2,962万'],['永赢先锋半导体智选C','025209','半导体','1,520万'],['国联安中证半导体ETF','512480','半导体','1,396万'],['国投瑞银白银期货(LOF)A','161226','贵金属','1,286万']],
+reduceUsers:[['永赢先锋半导体智选C','025209','半导体','2,961'],['东方人工智能主题混合C','017811','AI算力','2,246'],['永赢高端装备智选混合发起C','015790','高端制造','1,883'],['国投瑞银白银期货(LOF)A','161226','贵金属','1,024'],['永赢先进制造智选混合发起C','018125','高端制造','1,106']],
+investUsers:[['东方人工智能主题混合C','017811','AI算力','1,506'],['永赢先锋半导体智选C','025209','半导体','1,238'],['永赢高端装备智选混合发起C','015790','高端制造','836'],['永赢先进制造智选混合发起C','018125','高端制造','792'],['国投瑞银白银期货(LOF)A','161226','贵金属','582']],
+favUsers:[['东方人工智能主题混合C','017811','AI算力','1,562'],['永赢先锋半导体智选C','025209','半导体','1,254'],['永赢先进制造智选混合发起C','018125','高端制造','1,036'],['永赢高端装备智选混合发起C','015790','高端制造','968'],['国投瑞银白银期货(LOF)A','161226','贵金属','386']],
+heat:[['东方人工智能主题混合C','017811','AI算力','6,335.08万'],['永赢先锋半导体智选C','025209','半导体','4,791.83万'],['永赢先进制造智选混合发起C','018125','高端制造','4,023.80万'],['国联安中证半导体ETF','512480','半导体','3,812.62万'],['永赢高端装备智选混合发起C','015790','高端制造','2,521.58万']]
+};
+const focusFunds=[
+['东方人工智能主题混合C','017811','AI算力','搜索人数飙升','近7日搜索人数较前7日持续提升'],
+['永赢先锋半导体智选C','025209','半导体','自选人数飙升','昨日自选人数较过去7日日均值明显提升'],
+['国投瑞银白银期货(LOF)A','161226','贵金属','板块搜索人数飙升','所属板块近7日搜索排名上升'],
+['永赢先进制造智选混合发起C','018125','高端制造','加仓人数飙升','近7日加仓人数日均值较前7日明显提升']
+];
+const boardOpportunities=[
+['AI算力','搜索前 5','+3.96%','8,621.3万','#1','今日板块搜索人数进入全市场前 5，本公司有 3 只关联基金','3','东方人工智能主题混合C'],
+['半导体','涨幅前 5','+3.28%','7,235.4万','#2','今日板块涨跌幅进入全市场前 5，本公司有 1 只关联基金','1','永赢先锋半导体智选C'],
+['高端制造','持续高搜索','+2.35%','4,308.1万','#5','近一周板块搜索人数持续高于全市场平均水平，本公司有 2 只关联基金','2','永赢先进制造智选C'],
+['贵金属','搜索人数飙升','+2.71%','4,866.7万','#4','昨日板块搜索人数较过去 7 日日均值明显提升，本公司有 1 只关联基金','1','国投瑞银白银期货A'],
+['机器人','连续上涨','+4.82%','6,106.2万','#3','近一周板块连续上涨，本公司有 2 只关联基金','2','永赢先进制造智选C']
+];
+const sectors=[
+{name:'AI算力',funds:36,companyFunds:3,hottest:'东方人工智能主题混合C',heat:'8,621.3万',rank:'1',positive:'74.2%',dynamic:'26,382'},
+{name:'半导体',funds:28,companyFunds:1,hottest:'永赢先锋半导体智选C',heat:'7,235.4万',rank:'2',positive:'70.1%',dynamic:'18,562'},
+{name:'高端制造',funds:31,companyFunds:2,hottest:'永赢先进制造智选C',heat:'4,308.1万',rank:'5',positive:'63.8%',dynamic:'14,215'},
+{name:'贵金属',funds:18,companyFunds:1,hottest:'国投瑞银白银期货A',heat:'4,866.7万',rank:'4',positive:'58.9%',dynamic:'8,325'}
+];
+const sectorRows={
+'半导体':{heat:[['1','国联安中证半导体ETF','512480',false,'3,812.62万'],['2','华夏国证半导体芯片ETF','159995',false,'3,265.08万'],['3','诺安成长混合','320007',false,'2,902.16万'],['4','银河创新成长混合','519674',false,'2,768.33万'],['5','招商移动互联网产业','001404',false,'2,510.20万'],['12','永赢先锋半导体智选C','025209',true,'4,791.83万']],fav:[['8','同板块基金A',false,'高于本基金'],['9','永赢先锋半导体智选C',true,'1,254'],['10','同板块基金B',false,'低于本基金']],add:[['5','同板块基金A',false,'高于本基金','-'],['6','永赢先锋半导体智选C',true,'6,874','1,520万'],['7','同板块基金B',false,'低于本基金','-']]},
+'AI算力':{heat:[['1','东方人工智能主题混合C','017811',true,'6,335.08万'],['2','华夏中证机器人ETF','159551',false,'4,216.76万'],['3','人工智能ETF','515980',false,'3,988.22万'],['4','云计算ETF','516510',false,'3,276.30万'],['5','信创ETF','562570',false,'2,986.40万']],fav:[['2','同板块基金A',false,'高于本基金'],['3','东方人工智能主题混合C',true,'1,562'],['4','同板块基金B',false,'低于本基金']],add:[['1','同板块基金A',false,'高于本基金','-'],['2','东方人工智能主题混合C',true,'5,131','3,585万'],['3','同板块基金B',false,'低于本基金','-']]},
+'高端制造':{heat:[['1','永赢先进制造智选C','018125',true,'4,023.80万'],['2','高端装备ETF','516320',false,'3,455.20万'],['3','智能制造ETF','516800',false,'3,216.66万'],['4','工业母机ETF','159667',false,'2,809.35万'],['5','机器人ETF','562500',false,'2,621.10万']],fav:[['4','同板块基金A',false,'高于本基金'],['5','永赢先进制造智选C',true,'1,036'],['6','同板块基金B',false,'低于本基金']],add:[['3','同板块基金A',false,'高于本基金','-'],['4','永赢高端装备智选混合发起C',true,'2,901','1,246万'],['5','同板块基金B',false,'低于本基金','-']]},
+'贵金属':{heat:[['1','华安黄金易ETF联接A','000216',false,'466.82万'],['2','易方达黄金ETF联接A','000307',false,'430.12万'],['3','博时黄金ETF联接A','002610',false,'401.66万'],['4','国投瑞银白银期货(LOF)A','161226',true,'505.56万'],['5','黄金基金ETF','518800',false,'388.22万']],fav:[['6','同板块基金A',false,'高于本基金'],['7','国投瑞银白银期货(LOF)A',true,'386'],['8','同板块基金B',false,'低于本基金']],add:[['4','同板块基金A',false,'高于本基金','-'],['5','国投瑞银白银期货(LOF)A',true,'1,582','1,286万'],['6','同板块基金B',false,'低于本基金','-']]}
+};
+
+function f(code){return funds.find(x=>x.code===code)||funds[0]}
+function setTitle(t){document.getElementById('pageTitle').textContent=t}
+function activeNav(){document.querySelectorAll('.navBtn').forEach(b=>b.classList.remove('active'));let id=state.page.startsWith('fund')?'nav-fund':state.page.startsWith('sector')?'nav-sector':'nav-dashboard';document.getElementById(id).classList.add('active')}
+function go(p){state.page=p;render()}
+function openFund(code){state.fundCode=code;state.page='fundDetail';state.fundTab='holder';render()}
+function openSector(name){state.sector=name;state.page='sectorDetail';state.sectorView='heat';render()}
+function tab(t){state.fundTab=t;render()}
+function metric(items,cls=''){return `<div class="card"><div class="metrics ${cls}">${items.map(x=>`<div class="metric"><div class="ml">${x[0]}</div><div class="mv">${x[1]}</div><div class="ms">${x[2]||'较昨日'} <span class="${String(x[3]||'+0.0%').startsWith('-')?'down':'up'}">${x[3]||'+0.0%'}</span></div></div>`).join('')}</div></div>`}
+function table(head,rows){return `<div class="tableWrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`}
+function fieldNotes(type){
+  const notes={
+    dashboard:['搜索人数：统计周期内搜索该基金的去重用户人数。','自选人数：统计周期内新增将该基金加入自选的用户人数。','加仓人数：统计周期内记录该基金加仓行为的去重用户人数。','搜索排名：按板块搜索人数在全市场板块中形成的排名。'],
+    fundList:['持仓人数：当前持有该基金的用户人数。','持仓金额：当前用户记录的该基金持仓金额合计。','累计自选人数：截至当前统计时间，将该基金加入自选的累计用户人数。','自选人数：统计周期内新增将该基金加入自选的用户人数。','搜索人数：统计周期内搜索该基金的去重用户人数。'],
+    fundDetail:['持仓人数：当前持有该基金的用户人数。','累计自选人数：截至当前统计时间，将该基金加入自选的累计用户人数。','自选人数：统计周期内新增将该基金加入自选的用户人数。','搜索人数：统计周期内搜索该基金的去重用户人数。','用户原声洞察：基于近 7 日社区动态提炼用户情绪、关注点和典型表达。'],
+    sector:['板块搜索人数：统计周期内搜索该板块或相关关键词的去重用户人数。','搜索排名：当前板块在全市场板块中的搜索人数排名。','关联基金数：当前板块下关联的基金数量。','本公司关联基金数：当前登录基金公司在该板块下关联的基金数量。']
+  };
+  return `<div class="fieldNotes"><b>字段说明</b>${(notes[type]||[]).map(t=>`<span>${t}</span>`).join('')}</div>`;
+}
+function boardOpportunityTable(){
+  const rows=boardOpportunities.map(r=>`<tr class="clickable" onclick="openSector('${r[0]}')"><td class="boardCell">${r[0]}<span class="tag orange">${r[1]}</span></td><td class="highlight">${r[2]}</td><td>${r[4]}</td><td class="triggerCell">${r[5]}</td><td>${r[6]}</td><td class="productCell">${r[7]}</td></tr>`);
+  return `<div class="opportunityTable">${table(['板块 / 机会类型','涨跌幅','搜索排名','触发依据','关联基金数','最热关联产品'],rows)}</div>`;
+}
+function rankRows(rows,clickable=false){
+  return rows.map((r,i)=>`<tr ${clickable?`class="clickable" onclick="openFund('${r[1]}')"`:''}><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`);
+}
+function codeByName(name){const item=funds.find(x=>x.name===name);return item?item.code:'-'}
+function positionLabel(rank){const n=parseInt(rank,10)||1; if(n<=10)return '位于板块前 10%'; if(n<=20)return '位于板块前 20%'; if(n<=50)return '位于板块前 50%'; return '位于板块后 50%'}
+function companyTopRows(metricKey){
+  const getVal=(x)=>{
+    const raw={addUsers:x.addUsers,addAmount:x.addAmount,reduceUsers:x.reduceUsers,investUsers:x.investUsers,favUsers:x.favUsers,heat:x.heat}[metricKey]||x.addUsers;
+    return parseFloat(String(raw).replace(/,/g,''))||0;
+  };
+  const showVal=(x)=>({addUsers:x.addUsers,addAmount:x.addAmount,reduceUsers:x.reduceUsers,investUsers:x.investUsers,favUsers:x.favUsers,heat:x.heat}[metricKey]||x.addUsers);
+  return [...funds].sort((a,b)=>getVal(b)-getVal(a)).slice(0,5).map(x=>[x.name,x.code,x.sector,showVal(x)]);
+}
+function render(){activeNav();if(state.page==='dashboard')dashboard();if(state.page==='fundList')fundList();if(state.page==='fundDetail')fundDetail();if(state.page==='sectorList')sectorList();if(state.page==='sectorDetail')sectorDetail();setTimeout(draw,0)}
+
+function dashboard(){
+setTitle('今日看板');
+const company=[['今日加仓人数','19,122','较昨日','+13.5%'],['今日加仓金额','8,805万','较昨日','+12.4%'],['今日减仓人数','9,220','较昨日','-3.6%'],['今日定投人数','4,954','较昨日','+6.8%'],['自选人数','5,206','较昨日','+9.8%']];
+const companyRows=companyTopRows(state.dashMetric);
+const dashTabs=[['addUsers','加仓人数'],['addAmount','加仓金额'],['reduceUsers','减仓人数'],['investUsers','定投人数'],['favUsers','自选人数'],['heat','搜索人数']];
+app.innerHTML=`
+<div class="card"><h3><span class="sectionMark">本公司今日概览</span></h3><div class="desc">本公司旗下基金今日用户行为概览，交易数据为用户记账行为。</div><div class="metrics five">${company.map(x=>`<div class="metric"><div class="ml">${x[0]}</div><div class="mv">${x[1]}</div><div class="ms">${x[2]} <span class="${x[3].startsWith('-')?'down':'up'}">${x[3]}</span></div></div>`).join('')}</div></div>
+<div class="card"><h3><span class="sectionMark">重点关注基金</span></h3><div class="desc">基于今日实时数据、昨日完整数据和近 7 日趋势识别用户行为明显变化的基金。点击基金名称或整行进入基金详情。</div>${table(['基金名称','代码','所属板块','机会类型','触发依据'],focusFunds.map(r=>`<tr class="clickable" onclick="openFund('${r[1]}')"><td class="highlight">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td><span class="tag orange">${r[3]}</span></td><td>${r[4]}</td></tr>`))}</div>
+<div class="card"><div class="splitHead"><div><h3><span class="sectionMark">板块机会观察</span></h3><div class="desc">基于今日、昨日、近一周数据识别全市场板块机会，并筛选本公司有产品承接的固定数量机会列表。</div></div></div>${boardOpportunityTable()}<div class="notice">入选规则：板块满足涨幅前 5、搜索前 5、搜索人数飙升、连续上涨、持续高搜索等任一条件，且本公司关联基金数 > 0；本公司无关联产品的板块不进入主列表。</div></div>
+<div class="card"><div class="splitHead"><div><h3><span class="sectionMark">今日基金行为对照 Top 5</span></h3><div class="desc">按所选指标展示本公司基金与全市场基金 Top 5；不展示具体指标值。</div></div><div class="seg">${dashTabs.map(([k,t])=>`<button class="pill ${state.dashMetric===k?'active':''}" onclick="state.dashMetric='${k}';render()">${t}</button>`).join('')}</div></div><div class="top5Compare"><div class="top5Box"><div class="miniTitle">本公司基金 Top 5</div>${table(['排名','基金名称','代码','板块'],rankRows(companyRows,true))}</div><div class="top5Box"><div class="miniTitle">全市场基金 Top 5</div>${table(['排名','基金名称','代码','板块'],rankRows(marketTop[state.dashMetric],false))}</div></div></div>
+<div class="notice">数据口径：交易相关数据为小倍用户记账行为，不等同于基金公司真实申购、赎回或交易确认数据；搜索人数为统计周期内去重用户人数；自选人数为统计周期内新增自选人数；板块涨跌幅为实时指标。</div>${fieldNotes('dashboard')}`;
+}
+
+function voiceInsight(kind,obj){
+  const name = kind==='sector' ? obj.name : obj.name;
+  const isSector = kind==='sector';
+  const baseTopic = isSector ? obj.name : obj.sector;
+  const cardSpan = 's12';
+  const count = obj.dynamic;
+  const positive = obj.positive;
+  const topics = isSector
+    ? ['板块持续性','相关基金选择','短期波动','是否追高','持有信心']
+    : ['短期回撤','是否补仓','定投节奏','持有信心','同板块表现'];
+  const keywords = isSector
+    ? [baseTopic,'加仓','回调','产业链','波动','基金选择','搜索']
+    : [baseTopic,'回撤','定投','加仓','波动','持有','反弹'];
+  const summary = isSector
+    ? `近 7 日用户讨论集中在${baseTopic}板块持续性、相关基金选择和短期涨幅变化。整体情绪偏谨慎，部分用户表达继续观察，同时对回调风险保持关注。`
+    : `近 7 日用户讨论集中在${name}的短期波动、定投节奏和是否继续持有。整体情绪偏谨慎，部分用户仍表达继续观察和分批处理的意愿。`;
+  const voices = isSector
+    ? [
+      [`${baseTopic}最近关注度挺高，但涨得快了还是想再观察一下。`,'板块持续性｜谨慎'],
+      [`想看看这个方向里哪些基金关联度更高，不想只看涨幅。`,'基金选择｜中性'],
+      [`之前一直关注这个板块，短期波动能接受，还是想看后续搜索关注能不能延续。`,'持有信心｜偏积极']
+    ]
+    : [
+      [`这只最近波动有点大，先看两天再决定要不要补。`,'短期回撤｜谨慎'],
+      [`定投还在继续，不准备因为一天涨跌频繁操作。`,'定投节奏｜中性'],
+      [`同板块最近搜索关注起来了，但还是想看看这只后面能不能跟上。`,'同板块表现｜谨慎']
+    ];
+  return `<div class="card ${cardSpan} insightCard">
+    <div class="insightShell">
+      <div class="insightHead">
+        <div>
+          <h3>用户原声洞察</h3>
+          <div class="desc">基于近 7 日社区动态，提炼用户情绪、关注点和典型表达。</div>
+        </div>
+        <span class="periodTag">样本周期：近 7 日</span>
+      </div>
+      <div class="insightMetrics">
+        <div class="insightMetric"><div class="k">近 7 日有效动态数量</div><div class="v">${count}</div></div>
+        <div class="insightMetric"><div class="k">近 7 日正向情绪占比</div><div class="v">${positive}</div></div>
+      </div>
+      <div class="aiSummary">${summary}</div>
+      <div class="insightLayout">
+        <div>
+          <div class="insightBlocks">
+            <div class="insightBlock"><div class="miniTitle">用户关注点</div><div class="tagList">${topics.map(t=>`<span class="topicTag">${t}</span>`).join('')}</div></div>
+            <div class="insightBlock"><div class="miniTitle">高频关键词</div><div class="tagList">${keywords.map(t=>`<span class="keywordTag">${t}</span>`).join('')}</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="miniTitle">典型原声</div>
+          <div class="voiceList">${voices.map(v=>`<div class="voiceCard"><div class="voiceText">“${v[0]}”</div><div class="voiceMeta">${v[1]}</div></div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="insightNote">典型原声已脱敏并轻度清洗，仅用于用户情绪观察和内容参考，不构成投资建议。</div>
+    </div>
+  </div>`
+}
+
+function fundList(){setTitle('基金监控');app.innerHTML=`<div class="card"><div class="toolbar"><div class="leftTools"><input placeholder="基金名称或代码"><select><option>全部板块</option><option>半导体</option><option>AI算力</option><option>贵金属</option></select><button class="btn">搜索</button></div><div class="dateRange">自定义时间段：2026-06-01 至 2026-06-10</div></div>${table(['基金名称','代码','所属板块','持仓人数','持仓金额','累计自选人数','搜索人数','自选人数','加仓人数','加仓金额'],funds.map(x=>`<tr class="clickable" onclick="openFund('${x.code}')"><td>${x.name}</td><td>${x.code}</td><td>${x.sector}</td><td>${x.holdUsers}</td><td>${x.holdAmount}</td><td>${x.watchUsers}</td><td>${x.heat}</td><td>${x.favUsers}</td><td>${x.addUsers}</td><td>${x.addAmount}</td></tr>`))}<div class="notice">搜索人数为统计周期内搜索该基金的去重用户人数。</div>${fieldNotes('fundList')}</div>`}
+
+function fundDetail(){const x=f(state.fundCode);setTitle(`${x.name}（${x.code}）`);app.innerHTML=`<div class="crumb"><button class="back" onclick="go('fundList')">‹ 返回基金列表</button><div class="dateRange">自定义时间段：2026-06-01 至 2026-06-10</div></div><div class="tabs">${[['holder','持仓监控'],['behavior','行为监控'],['trade','交易监控']].map(([k,t])=>`<button class="tab ${state.fundTab===k?'active':''}" onclick="tab('${k}')">${t}</button>`).join('')}</div>${fundTabBody(x)}${fieldNotes('fundDetail')}`}
+function fundTabBody(x){
+if(state.fundTab==='holder')return metric([['持仓人数',x.holdUsers,'较昨日','+0.12%'],['持仓金额',x.holdAmount,'较7日','-2.47%'],['累计自选人数',x.watchUsers,'较7日','+4.6%'],['平均持仓盈亏',x.avgProfit,'较7日','-8.68%'],['持仓盈利用户占比',x.profitRatio,'较7日','-3.40%']],'five')+`<div class="card"><div class="splitHead"><div><h3>持仓趋势图</h3><div class="desc">通过同板块均值和同板块排名走势提供参考，支持持仓人数 / 持仓金额 / 累计自选人数切换。</div></div><div class="seg"><button class="pill ${state.fundHolderMetric==='holdUsers'?'active':''}" onclick="state.fundHolderMetric='holdUsers';render()">持仓人数</button><button class="pill ${state.fundHolderMetric==='holdAmount'?'active':''}" onclick="state.fundHolderMetric='holdAmount';render()">持仓金额</button><button class="pill ${state.fundHolderMetric==='watchUsers'?'active':''}" onclick="state.fundHolderMetric='watchUsers';render()">累计自选人数</button><span class="viewNote">本基金数值 + 同板块均值 + 同板块排名</span></div></div><div class="chart" id="holderChart"></div><div class="notice">盈亏相关数据基于小倍用户记账数据测算，仅用于用户持仓状态观察，不代表基金公司官方收益数据。</div></div>`;
+if(state.fundTab==='behavior')return metric([['搜索人数',x.heat,'较昨日','+12.4%'],['自选人数',x.favUsers,'较昨日','+18.6%'],['今日正向情绪占比',x.positive,'较7日','+2.3%']],'three')+`<div class="grid"><div class="card s12"><div class="splitHead"><div><h3>行为趋势图</h3><div class="desc">默认支持分时 / 日趋势；自选人数同时支持分时 / 日 / 周 / 月。</div></div></div><div class="controlPanel"><div class="controlBlock"><span class="controlLabel">指标</span><button class="pill ${state.behaviorMetric==='heat'?'active':''}" onclick="state.behaviorMetric='heat'; if(state.behaviorPeriod==='week'||state.behaviorPeriod==='month'){state.behaviorPeriod='minute'}; render()">搜索人数</button><button class="pill ${state.behaviorMetric==='favUsers'?'active':''}" onclick="state.behaviorMetric='favUsers';render()">自选人数</button></div><div class="controlBlock"><span class="controlLabel">时间维度</span><button class="pill ${state.behaviorPeriod==='minute'?'active':''}" onclick="state.behaviorPeriod='minute';render()">分时</button><button class="pill ${state.behaviorPeriod==='day'?'active':''}" onclick="state.behaviorPeriod='day';render()">日</button>${state.behaviorMetric==='favUsers'?`<button class="pill ${state.behaviorPeriod==='week'?'active':''}" onclick="state.behaviorPeriod='week';render()">周</button><button class="pill ${state.behaviorPeriod==='month'?'active':''}" onclick="state.behaviorPeriod='month';render()">月</button>`:''}<span class="viewNote">本基金数值 + 同板块均值 + 同板块排名</span></div></div><div class="chart" id="behaviorChart"></div></div>${voiceInsight('fund',x)}</div>`;
+if(state.fundTab==='trade'){
+ return metric([['加仓人数',x.addUsers,'较昨日','+11.8%'],['加仓金额',x.addAmount,'较昨日','+8.2%'],['减仓人数',x.reduceUsers,'较昨日','-6.4%'],['定投人数',x.investUsers,'较昨日','+5.2%']])+`<div class="card"><div class="splitHead"><div><h3>交易行为趋势</h3><div class="desc">交易监控统一使用趋势图展示，支持分时 / 日 / 周 / 月时间维度。</div></div></div><div class="controlPanel"><div class="controlBlock"><span class="controlLabel">指标</span><button class="pill ${state.tradeMetric==='addUsers'?'active':''}" onclick="state.tradeMetric='addUsers';render()">加仓人数</button><button class="pill ${state.tradeMetric==='addAmount'?'active':''}" onclick="state.tradeMetric='addAmount';render()">加仓金额</button><button class="pill ${state.tradeMetric==='reduceUsers'?'active':''}" onclick="state.tradeMetric='reduceUsers';render()">减仓人数</button><button class="pill ${state.tradeMetric==='investUsers'?'active':''}" onclick="state.tradeMetric='investUsers';render()">定投人数</button></div><div class="controlBlock"><span class="controlLabel">时间维度</span><button class="pill ${state.tradePeriod==='minute'?'active':''}" onclick="state.tradePeriod='minute';render()">分时</button><button class="pill ${state.tradePeriod==='day'?'active':''}" onclick="state.tradePeriod='day';render()">日</button><button class="pill ${state.tradePeriod==='week'?'active':''}" onclick="state.tradePeriod='week';render()">周</button><button class="pill ${state.tradePeriod==='month'?'active':''}" onclick="state.tradePeriod='month';render()">月</button></div></div><div class="chart" id="tradeChart"></div><div class="notice">周/月人数类指标为周期内每日人数累加值，不代表周期内去重用户数。</div></div>`;
+}
+}
+
+function sectorList(){setTitle('板块监控');app.innerHTML=`<div class="card">${table(['板块名称','板块搜索人数','搜索排名','关联基金数','本公司关联基金数','本公司最热关联产品'],sectors.map(s=>`<tr class="clickable" onclick="openSector('${s.name}')"><td>${s.name}</td><td>${s.heat}</td><td>#${s.rank}</td><td>${s.funds}</td><td>${s.companyFunds}</td><td>${s.hottest}</td></tr>`))}<div class="notice">板块搜索人数为统计周期内搜索该板块或相关关键词的去重用户人数；列表页不展示动态数量。</div>${fieldNotes('sector')}</div>`}
+function sectorDetail(){const s=sectors.find(x=>x.name===state.sector)||sectors[0];setTitle(`${s.name} 板块监控`);app.innerHTML=`<div class="crumb"><button class="back" onclick="go('sectorList')">‹ 返回板块列表</button><div class="dateRange">2026/06/02　-　2026/06/09</div></div>${metric([['板块搜索人数',s.heat,'较昨日','+11.2%'],['搜索排名','#'+s.rank,'较昨日','↑1'],['关联基金数',s.funds,'全市场',''],['本公司关联基金数',s.companyFunds,'本公司','']])}<div class="card"><div class="splitHead"><div><h3>板块趋势图</h3><div class="desc">板块搜索人数与搜索排名同图展示，支持分时和日维度查看。</div></div></div><div class="controlPanel"><div class="controlBlock"><span class="controlLabel">图表数据</span><span class="tag orange">板块搜索人数</span><span class="tag blue">搜索排名</span><span class="viewNote">左轴：搜索人数；右轴：搜索排名</span></div><div class="controlBlock"><span class="controlLabel">时间维度</span><button class="pill ${state.sectorPeriod==='minute'?'active':''}" onclick="state.sectorPeriod='minute';render()">分时</button><button class="pill ${state.sectorPeriod==='day'?'active':''}" onclick="state.sectorPeriod='day';render()">日</button></div></div><div class="chart" id="sectorTrend"></div></div><div class="card"><div class="splitHead"><div><h3>本公司基金在板块内表现</h3><div class="desc">搜索视角展示 Top5 + 本公司最热关联基金；关注和加仓视角只展示本公司基金表现。</div></div><div class="seg">${[['heat','搜索视角'],['fav','关注视角'],['add','加仓视角']].map(([k,t])=>`<button class="pill ${state.sectorView===k?'active':''}" onclick="state.sectorView='${k}';render()">${t}</button>`).join('')}</div></div>${sectorPerformance(s.name)}</div><div class="grid">${voiceInsight('sector',s)}</div>${fieldNotes('sector')}`}
+function sectorPerformance(name){
+const data=sectorRows[name]||sectorRows['半导体'];
+const nameCell=(r)=>`${r[1]}${r[3]?' <span class="tag orange">本公司</span>':''}`;
+if(state.sectorView==='heat'){
+  const rows=data.heat.map((r,i)=>`${i===5?'<tr class="rankSep"><td colspan="5">本公司最热关联基金</td></tr>':''}<tr class="${r[3]?'companyRow ':''}clickable" ${r[3]?`onclick="openFund('${r[2]}')"`:''}><td>第${r[0]}名</td><td>${nameCell(r)}</td><td>${r[2]}</td><td>${r[4]}</td><td>#${r[0]}</td></tr>`);
+  return table(['排名','基金名称','基金代码','搜索人数','板块内搜索排名'],rows);
+}
+function rangeRows(rows,mode){
+  const company=rows.find(r=>r[2])||rows[1];
+  const n=parseInt(company[0],10)||1;
+  const code=codeByName(company[1]);
+  if(mode==='fav'){
+    return table(['基金名称','基金代码','自选人数','板块内排名','相对位置'],[
+      `<tr class="companyRow clickable" onclick="openFund('${code}')"><td>${company[1]} <span class="tag orange">本公司</span></td><td>${code}</td><td>${company[3]}</td><td>第 ${n} 名</td><td>${positionLabel(n)}</td></tr>`
+    ]);
+  }
+  return table(['基金名称','基金代码','加仓人数','加仓金额','板块内排名','相对位置'],[
+    `<tr class="companyRow clickable" onclick="openFund('${code}')"><td>${company[1]} <span class="tag orange">本公司</span></td><td>${code}</td><td>${company[3]}</td><td>${company[4]}</td><td>第 ${n} 名</td><td>${positionLabel(n)}</td></tr>`
+  ]);
+}
+if(state.sectorView==='fav')return rangeRows(data.fav,'fav');
+return rangeRows(data.add,'add');
+}
+
+function ec(id,opt){const el=document.getElementById(id);if(el&&window.echarts)echarts.init(el).setOption(opt)}
+function line(x,series){
+  const rankIndex=series.findIndex(s=>s.name.includes('排名'));
+  const hasRank=rankIndex>=0;
+  return {color:['#4F7DFF','#22C55E','#F59E0B','#94A3B8'],tooltip:{trigger:'axis',backgroundColor:'#fff',borderColor:'#e8edf3',borderWidth:1,textStyle:{color:'#334155',fontSize:12},extraCssText:'box-shadow:0 8px 24px rgba(15,23,42,.08);border-radius:10px;'},legend:{bottom:0,itemWidth:16,itemHeight:8,textStyle:{color:'#667085',fontSize:12}},grid:{left:48,right:hasRank?54:18,top:18,bottom:42},xAxis:{type:'category',data:x,axisLine:{lineStyle:{color:'#e8edf3'}},axisTick:{show:false},axisLabel:{color:'#98a2b3',fontSize:12}},yAxis:hasRank?[{type:'value',name:'数值',nameTextStyle:{color:'#98a2b3'},splitLine:{lineStyle:{color:'#eef2f7',type:'dashed'}},axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#98a2b3',fontSize:12}},{type:'value',name:'排名',nameTextStyle:{color:'#98a2b3'},inverse:true,min:1,axisLine:{show:false},axisTick:{show:false},axisLabel:{formatter:function(value){return Number.isInteger(value)?'第'+value+'名':''},color:'#98a2b3',fontSize:12},minInterval:1,interval:2,splitLine:{show:false}}]:{type:'value',splitLine:{lineStyle:{color:'#eef2f7',type:'dashed'}},axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#98a2b3',fontSize:12}},series:series.map((s,i)=>({name:s.name,type:'line',smooth:true,symbol:'circle',symbolSize:hasRank&&i===rankIndex?5:4,showSymbol:false,yAxisIndex:hasRank&&i===rankIndex?1:0,data:s.data,lineStyle:{width:2.2},emphasis:{focus:'series'}}))}
+}
+function draw(){
+if(state.page==='fundDetail'){
+  if(state.fundTab==='holder'){
+    const users=[{name:'本基金持仓人数',data:[71.8,72,72.1,72.2,72.25,72.31,72.35,72.39]},{name:'同板块持仓人数均值',data:[52,52.5,53,53.2,53.7,54,54.3,54.8]},{name:'同板块持仓人数排名',data:[9,9,8,8,8,7,7,6]}];
+    const amount=[{name:'本基金持仓金额',data:[228,229,229.5,230,230.1,230.2,230.25,230.27]},{name:'同板块持仓金额均值',data:[160,162,163,164,165,166,167,168]},{name:'同板块持仓金额排名',data:[8,8,8,7,7,7,6,6]}];
+    const watch=[{name:'本基金累计自选人数',data:[1218,1234,1248,1260,1285,1310,1342,1364]},{name:'同板块累计自选人数均值',data:[980,994,1010,1024,1048,1076,1108,1130]},{name:'同板块累计自选人数排名',data:[10,10,9,9,8,8,7,7]}];
+    const holderSeries=state.fundHolderMetric==='holdAmount'?amount:(state.fundHolderMetric==='watchUsers'?watch:users);
+    ec('holderChart',line(['06/02','06/03','06/04','06/05','06/06','06/07','06/08','06/09'],holderSeries));
+  }
+  if(state.fundTab==='behavior'){
+    const labelsMap={minute:['09:30','10:30','11:30','13:30','14:30','15:00'],day:['06/02','06/03','06/04','06/05','06/06','06/07','06/08','06/09'],week:['第20周','第21周','第22周','第23周'],month:['3月','4月','5月','6月']};
+    const p=state.behaviorPeriod;
+    const labels=labelsMap[p]||labelsMap.minute;
+    const heatBase=p==='day'?[12,16,18,62,118,196,208,235]:[42,58,75,96,124,142];
+    const favBase=p==='minute'?[80,130,210,360,520,680]:(p==='day'?[120,168,210,320,560,830,1080,1254]:(p==='week'?[1450,2160,3280,4880]:[6200,7800,9600,12800]));
+    const selected=state.behaviorMetric==='favUsers'?favBase:heatBase;
+    const metricName=state.behaviorMetric==='favUsers'?'自选人数':'搜索人数';
+    ec('behaviorChart',line(labels,[{name:`本基金${metricName}`,data:selected},{name:`同板块${metricName}均值`,data:selected.map(v=>Math.round(v*0.68))},{name:`同板块${metricName}排名`,data:selected.map((_,i)=>Math.max(5,13-i))}]));
+  }
+  if(state.fundTab==='trade'){
+    const labelsMap={minute:['09:30','10:30','11:30','13:30','14:30','15:00'],day:['06/02','06/03','06/04','06/05','06/06','06/07','06/08','06/09'],week:['第20周','第21周','第22周','第23周'],month:['3月','4月','5月','6月']};
+    const p=state.tradePeriod;
+    const labels=labelsMap[p]||labelsMap.minute;
+    const dataMap={
+      addUsers:{name:'加仓人数',minute:[320,580,840,1260,1560,1720],day:[980,1120,1280,1500,1420,1600,1680,1720],week:[6230,7180,8260,9010],month:[18800,22400,26900,31200]},
+      addAmount:{name:'加仓金额',minute:[180,320,520,780,1180,1520],day:[860,920,1100,1260,1180,1320,1460,1520],week:[4920,5280,6100,7200],month:[14200,16800,19600,23600]},
+      reduceUsers:{name:'减仓人数',minute:[140,260,420,620,790,930],day:[760,820,900,960,880,920,940,930],week:[3280,3650,3980,4210],month:[9800,11200,12400,13800]},
+      investUsers:{name:'定投人数',minute:[90,160,260,410,560,690],day:[520,560,610,640,630,660,680,690],week:[2180,2460,2680,2920],month:[7200,8400,9300,10200]}
+    };
+    const cfg=dataMap[state.tradeMetric]||dataMap.addUsers;
+    const base=cfg[p]||cfg.minute;
+    ec('tradeChart',line(labels,[{name:`本基金${cfg.name}`,data:base},{name:`同板块${cfg.name}均值`,data:base.map(v=>Math.round(v*0.64))},{name:`同板块${cfg.name}排名`,data:base.map((_,i)=>Math.max(4,10-i))}]));
+  }
+}
+if(state.page==='sectorDetail'){
+  const labels=state.sectorPeriod==='day'?['06/02','06/03','06/04','06/05','06/06','06/07','06/08','06/09']:['09:30','10:30','11:30','13:30','14:30','15:00'];
+  const heat=state.sectorPeriod==='day'?[56,60,66,72,88,96,104,112]:[68,74,81,92,103,112];
+  const rank=state.sectorPeriod==='day'?[5,5,4,4,3,3,2,2]:[4,4,3,3,2,2];
+  const series=[{name:'板块搜索人数',data:heat},{name:'搜索排名',data:rank}];
+  ec('sectorTrend',line(labels,series));
+}
+}
+
+render();
+</script>
+</body>
+</html>
