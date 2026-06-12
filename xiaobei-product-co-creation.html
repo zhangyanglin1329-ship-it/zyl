@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小倍产品共创会｜问题编号修正版</title>
+<style>
+:root {
+  --panel: rgba(255,255,255,.078);
+  --line: rgba(177,226,255,.17);
+  --text: #f4fbff;
+  --muted: rgba(226,242,255,.68);
+  --soft: rgba(226,242,255,.46);
+  --cyan: #48f0dc;
+  --mint: #8affb7;
+  --amber: #ffd166;
+  --blue: #69adff;
+  --emerald: #4af0af;
+  --violet: #aaa2ff;
+  --purple: #d48bff;
+  --accent: var(--cyan);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #061022;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(65,118,255,.25), transparent 31%),
+    radial-gradient(circle at 88% 24%, rgba(72,240,220,.13), transparent 30%),
+    radial-gradient(circle at 55% 100%, rgba(151,114,255,.13), transparent 34%),
+    linear-gradient(135deg, #050b18 0%, #071935 48%, #071326 100%);
+  z-index: -3;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0%, rgba(72,240,220,.04) 28%, transparent 45%),
+    linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px),
+    linear-gradient(rgba(255,255,255,.012) 1px, transparent 1px);
+  background-size: auto, 110px 110px, 110px 110px;
+  opacity: .50;
+  z-index: -2;
+}
+
+.deck {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: 6vh 7vw 8vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateX(2.8vw);
+  pointer-events: none;
+  transition: opacity .42s ease, transform .42s ease;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.slide.prev { transform: translateX(-2.8vw); }
+
+.inner {
+  width: min(1480px, 100%);
+  height: min(820px, 88vh);
+  position: relative;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  white-space: nowrap;
+}
+
+.kicker::before {
+  content: "";
+  width: 46px;
+  height: 2px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+h1, h2 {
+  margin: 0;
+  line-height: 1.02;
+  font-weight: 950;
+  letter-spacing: -0.045em;
+}
+
+.cover-title {
+  font-size: clamp(78px, 7.6vw, 122px);
+  white-space: nowrap;
+  color: transparent;
+  background: linear-gradient(105deg, #eefeff 0%, #52f5e0 35%, #65baff 70%, #ceff86 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.title-line {
+  display: block;
+  white-space: nowrap;
+}
+
+.topic-title h1 {
+  font-size: clamp(58px, 4.55vw, 78px);
+  max-width: 640px;
+  line-height: 1.08;
+}
+
+h2 {
+  font-size: clamp(64px, 5.8vw, 94px);
+  white-space: nowrap;
+}
+
+.sub {
+  max-width: 820px;
+  margin: 30px 0 0;
+  color: var(--muted);
+  font-size: clamp(24px, 1.72vw, 31px);
+  line-height: 1.56;
+}
+
+.cover-pills {
+  display: flex;
+  gap: 18px;
+  margin-top: 58px;
+}
+
+.pill {
+  min-width: 190px;
+  padding: 22px 26px;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.045));
+  border: 1px solid var(--line);
+}
+
+.pill b {
+  display: block;
+  color: var(--accent);
+  font-size: 17px;
+  letter-spacing: .08em;
+}
+
+.pill span {
+  display: block;
+  margin-top: 12px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  width: min(1160px, 100%);
+  margin-top: 66px;
+}
+
+.time {
+  min-height: 232px;
+  padding: 32px;
+  border-radius: 32px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.time b {
+  display: block;
+  color: var(--accent);
+  font-size: 25px;
+}
+
+.time strong {
+  display: block;
+  margin-top: 50px;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+}
+
+.time span {
+  display: block;
+  margin-top: 13px;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.danmaku-layout {
+  display: grid;
+  grid-template-columns: 33% 67%;
+  gap: 58px;
+  align-items: center;
+}
+
+.big-number {
+  font-size: clamp(150px, 13vw, 230px);
+  line-height: .78;
+  letter-spacing: -0.09em;
+  font-weight: 960;
+  color: transparent;
+  background: linear-gradient(120deg, #f1ffff 0%, #56f3df 36%, #66b5ff 72%, #d8ff75 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.wall-text {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: 29px;
+  line-height: 1.5;
+  max-width: 540px;
+}
+
+.danmaku-stage {
+  position: relative;
+  height: 560px;
+  border-radius: 38px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(72,240,220,.12), transparent 35%),
+    linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.035));
+  border: 1px solid rgba(177,226,255,.16);
+  box-shadow: 0 24px 90px rgba(0,0,0,.22);
+  mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+.danmaku-stage::before {
+  content: "原始问题流";
+  position: absolute;
+  left: 30px;
+  top: 26px;
+  color: var(--accent);
+  font-size: 16px;
+  letter-spacing: .13em;
+  font-weight: 900;
+  z-index: 5;
+}
+
+.danmaku-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 62px;
+}
+
+.row-1 { top: 92px; }
+.row-2 { top: 178px; }
+.row-3 { top: 264px; }
+.row-4 { top: 350px; }
+.row-5 { top: 436px; }
+
+.danmaku-track {
+  display: inline-flex;
+  gap: 30px;
+  white-space: nowrap;
+  will-change: transform;
+  animation: danmakuMove 68s linear infinite;
+  padding-left: 100%;
+}
+
+.row-2 .danmaku-track { animation-duration: 76s; animation-delay: -20s; }
+.row-3 .danmaku-track { animation-duration: 84s; animation-delay: -36s; }
+.row-4 .danmaku-track { animation-duration: 72s; animation-delay: -10s; }
+.row-5 .danmaku-track { animation-duration: 88s; animation-delay: -48s; }
+
+.bullet {
+  display: inline-flex;
+  align-items: center;
+  max-width: 720px;
+  height: 62px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: rgba(4,18,42,.58);
+  border: 1px solid rgba(177,226,255,.16);
+  color: rgba(248,252,255,.88);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 12px 30px rgba(0,0,0,.16);
+}
+
+@keyframes danmakuMove {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: 38% 62%;
+  gap: 62px;
+  align-items: center;
+}
+
+.topic-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.response-mini {
+  margin-top: 48px;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  color: rgba(255,255,255,.88);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.6;
+}
+
+.voice-panel {
+  padding: 28px 30px;
+  min-height: 620px;
+  border-radius: 38px;
+  background: linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+  border: 1px solid rgba(177,226,255,.17);
+  box-shadow: 0 24px 90px rgba(0,0,0,.22);
+  overflow: visible;
+}
+
+.voice-panel.dense {
+  padding: 24px 28px;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.voice-panel.dense .panel-head {
+  margin-bottom: 16px;
+}
+
+.panel-head b {
+  color: var(--accent);
+  font-size: 16px;
+  letter-spacing: .13em;
+}
+
+.panel-head em {
+  color: var(--soft);
+  font-style: normal;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.voice-grid {
+  display: grid;
+  gap: 13px;
+}
+
+.voice-panel.dense .voice-grid {
+  gap: 10px;
+}
+
+.voice {
+  padding: 16px 20px;
+  border-radius: 22px;
+  background: rgba(4,18,42,.52);
+  border: 1px solid rgba(177,226,255,.145);
+}
+
+.voice-panel.dense .voice {
+  padding: 13px 18px;
+  border-radius: 20px;
+}
+
+.voice p {
+  margin: 0;
+  color: rgba(248,252,255,.93);
+  font-size: 17px;
+  line-height: 1.50;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.voice-panel.dense .voice p {
+  font-size: 15.2px;
+  line-height: 1.42;
+}
+
+.voice p b {
+  color: var(--accent);
+  font-weight: 950;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+  width: min(1160px, 100%);
+  margin-top: 66px;
+}
+
+.action {
+  min-height: 270px;
+  padding: 36px;
+  border-radius: 36px;
+  background: linear-gradient(145deg, rgba(255,255,255,.112), rgba(255,255,255,.045));
+  border: 1px solid rgba(177,226,255,.17);
+}
+
+.action .step {
+  font-size: 76px;
+  line-height: .85;
+  font-weight: 950;
+  letter-spacing: -0.08em;
+  color: transparent;
+  background: linear-gradient(130deg, var(--accent), #f4ffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.action strong {
+  display: block;
+  margin-top: 34px;
+  font-size: 31px;
+  letter-spacing: -0.04em;
+}
+
+.action p {
+  margin: 15px 0 0;
+  color: var(--muted);
+  font-size: 19px;
+  line-height: 1.58;
+}
+
+.tone-cyan { --accent: var(--cyan); }
+.tone-mint { --accent: var(--mint); }
+.tone-amber { --accent: var(--amber); }
+.tone-blue { --accent: var(--blue); }
+.tone-emerald { --accent: var(--emerald); }
+.tone-violet { --accent: var(--violet); }
+.tone-purple { --accent: var(--purple); }
+
+.nav {
+  position: fixed;
+  left: 42px;
+  right: 42px;
+  bottom: 24px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: rgba(232,248,255,.62);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.progress {
+  flex: 1;
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.14);
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #49f0dc, #68adff, #8bffb2);
+  transition: width .42s ease;
+}
+
+.ctrls { display: flex; gap: 10px; }
+
+.ctrl {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.075);
+  color: rgba(255,255,255,.78);
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.ctrl:hover {
+  border-color: rgba(72,240,220,.46);
+  color: #fff;
+  background: rgba(72,240,220,.10);
+}
+</style>
+</head>
+
+<body>
+<div class="deck">
+
+  <section class="slide active tone-cyan">
+    <div class="inner center">
+      <div class="kicker">XIAOBEI PRODUCT CO-CREATION</div>
+      <h1 class="cover-title">小倍产品共创会</h1>
+      <p class="sub">产品方向、业务问题与协作机制的重新对齐。</p>
+      <div class="cover-pills">
+        <div class="pill"><b>01</b><span>讲方向</span></div>
+        <div class="pill"><b>02</b><span>讲问题</span></div>
+        <div class="pill"><b>03</b><span>定机制</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide tone-cyan">
+    <div class="inner center">
+      <div class="kicker">AGENDA</div>
+      <h2>1 小时，只做有效推进</h2>
+      <div class="timeline">
+        <div class="time"><b>0–5 min</b><strong>开场</strong><span>定调与规则</span></div>
+        <div class="time"><b>5–15 min</b><strong>产品方向</strong><span>重点与边界</span></div>
+        <div class="time"><b>15–50 min</b><strong>议题回应</strong><span>7 个议题</span></div>
+        <div class="time"><b>50–60 min</b><strong>会后动作</strong><span>责任与时间</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide tone-cyan">
+    <div class="inner danmaku-layout">
+      <div>
+        <div class="kicker">VOICE FROM FRONTLINE</div>
+        <div class="big-number">22</div>
+        <h2>条真实反馈</h2>
+        <p class="wall-text">用原始问题流呈现参与感，不点名，不处刑。</p>
+      </div>
+      <div class="danmaku-stage">
+        <div class="danmaku-row row-1"><div class="danmaku-track"><span class="bullet">产品交互容易出现内容跳动、白屏、内容无法加载，详情页比较严重。</span>
+<span class="bullet">新用户刚安装后像残缺版，背景、按钮显示不全，未登录状态点击卡顿。</span>
+<span class="bullet">设置页面是否可以调整字体大小和主题选择。</span>
+<span class="bullet">广告位 CMS 缺少上线后效果预览 / 状态校验功能。</span>
+<span class="bullet">每日进入后持仓页不能自己刷新，需要手动刷新。</span>
+<span class="bullet">产品交互容易出现内容跳动、白屏、内容无法加载，详情页比较严重。</span>
+<span class="bullet">新用户刚安装后像残缺版，背景、按钮显示不全，未登录状态点击卡顿。</span>
+<span class="bullet">设置页面是否可以调整字体大小和主题选择。</span>
+<span class="bullet">广告位 CMS 缺少上线后效果预览 / 状态校验功能。</span>
+<span class="bullet">每日进入后持仓页不能自己刷新，需要手动刷新。</span></div></div>
+<div class="danmaku-row row-2"><div class="danmaku-track"><span class="bullet">AI 工具是否提高了小倍的开发效率？</span>
+<span class="bullet">会员相关的交互体验不好。</span>
+<span class="bullet">持有页面能不能长按基金移动排序或者分组？</span>
+<span class="bullet">广告位定向配置灵活性不足，配置流程繁琐。</span>
+<span class="bullet">需求排期、阶段重点没有规则，容易频繁变更。</span>
+<span class="bullet">AI 工具是否提高了小倍的开发效率？</span>
+<span class="bullet">会员相关的交互体验不好。</span>
+<span class="bullet">持有页面能不能长按基金移动排序或者分组？</span>
+<span class="bullet">广告位定向配置灵活性不足，配置流程繁琐。</span>
+<span class="bullet">需求排期、阶段重点没有规则，容易频繁变更。</span></div></div>
+<div class="danmaku-row row-3"><div class="danmaku-track"><span class="bullet">能否对产品做一轮大瘦身，剔除冗余部分？</span>
+<span class="bullet">新用户留存太低，希望增加游戏式新手引导。</span>
+<span class="bullet">需要给到基金业务端 / 基金公司使用的数据后台完成时间。</span>
+<span class="bullet">小程序盘中仍会加载卡顿，数据时有时无。</span>
+<span class="bullet">能否对产品做一轮大瘦身，剔除冗余部分？</span>
+<span class="bullet">新用户留存太低，希望增加游戏式新手引导。</span>
+<span class="bullet">需要给到基金业务端 / 基金公司使用的数据后台完成时间。</span>
+<span class="bullet">小程序盘中仍会加载卡顿，数据时有时无。</span></div></div>
+<div class="danmaku-row row-4"><div class="danmaku-track"><span class="bullet">基金组合如何删除？基金能否移动到别的组合？参考涨幅的线代表什么意思？</span>
+<span class="bullet">涨跌分布为空，不管怎么刷新都没用，只能关掉重新进入。</span>
+<span class="bullet">用户社区禁言标准、封禁时间、申诉机制需要说明。</span>
+<span class="bullet">产品总给人一种不稳定的感觉，卡顿、加载慢、白屏、没数据。</span>
+<span class="bullet">基金组合如何删除？基金能否移动到别的组合？参考涨幅的线代表什么意思？</span>
+<span class="bullet">涨跌分布为空，不管怎么刷新都没用，只能关掉重新进入。</span>
+<span class="bullet">用户社区禁言标准、封禁时间、申诉机制需要说明。</span>
+<span class="bullet">产品总给人一种不稳定的感觉，卡顿、加载慢、白屏、没数据。</span></div></div>
+<div class="danmaku-row row-5"><div class="danmaku-track"><span class="bullet">社区形式过于单一，只是发帖，希望增加多元化和趣味性。</span>
+<span class="bullet">APP 经常卡顿，内容消失或者会员信号消失。</span>
+<span class="bullet">主页和详情页都无法看全基金名称。</span>
+<span class="bullet">AI 加持下，哪些原本必须由开发完成的工程可以前置到运营侧？</span>
+<span class="bullet">社区形式过于单一，只是发帖，希望增加多元化和趣味性。</span>
+<span class="bullet">APP 经常卡顿，内容消失或者会员信号消失。</span>
+<span class="bullet">主页和详情页都无法看全基金名称。</span>
+<span class="bullet">AI 加持下，哪些原本必须由开发完成的工程可以前置到运营侧？</span></div></div>
+
+      </div>
+    </div>
+  </section>
+
+  
+<section class="slide tone-cyan">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 01</div>
+      <h1><span class="title-line">基础体验</span><span class="title-line">稳定性问题</span></h1>
+      <div class="response-mini">是否已有定位？能否形成专项治理？近期优先处理哪些？</div>
+    </aside>
+    <main class="voice-panel dense">
+      <div class="panel-head"><b>原始问题</b><em>6 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>产品交互过程容易出现内容跳动、白屏、内容无法加载，详情页比较严重。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>APP 内经常会出现内容为空的情况，比如涨跌分布为空，不管怎么刷新都没用，只有关掉重新进入。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>03.</b>APP 经常卡顿，内容消失或者会员信号消失，基础功能体验不好。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>04.</b>小程序盘中依然会存在加载数据、卡顿、数据时有时无。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>05.</b>产品总给人一种不稳定的感觉，卡顿、加载慢、白屏、没数据。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>06.</b>每日进入后持仓页不能自己刷新，需要手动刷新。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+<section class="slide tone-mint">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 02</div>
+      <h1><span class="title-line">新用户首日体验</span><span class="title-line">与留存</span></h1>
+      <div class="response-mini">首日体验是否优化？是否做轻量新手引导？关键行为如何排序？</div>
+    </aside>
+    <main class="voice-panel">
+      <div class="panel-head"><b>原始问题</b><em>3 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>APP 新用户体验不好，刚安装后像个残缺版，背景、按钮显示不全，未登录状态下点击反应卡顿。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>新用户留存太低。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>03.</b>增加“游戏式”新手引导，串联截图上传持仓、滑动查看参考涨幅、修改持仓等关键行为。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+<section class="slide tone-amber">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 03</div>
+      <h1><span class="title-line">会员转化</span><span class="title-line">与付费体验</span></h1>
+      <div class="response-mini">购买链路、权益表达、付费后体验是否有优化计划？</div>
+    </aside>
+    <main class="voice-panel">
+      <div class="panel-head"><b>原始问题</b><em>3 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>会员相关的交互体验不好。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>用户购买会员决策成本高、刚付费用户退费率高。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>03.</b>基础功能体验都不好，难以让用户付费会员，或者会因为基础功能体验差导致退费。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+<section class="slide tone-blue">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 04</div>
+      <h1><span class="title-line">基金持有 / 组合 /</span><span class="title-line">详情页基础操作</span></h1>
+      <div class="response-mini">哪些可做小版本体验优化？哪些进入需求池？哪些暂不做？</div>
+    </aside>
+    <main class="voice-panel">
+      <div class="panel-head"><b>原始问题</b><em>4 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>用户反馈较多：基金组合如何删除；基金能否移动到别的组合；参考涨幅的线代表什么意思。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>持有页面能不能长按基金移动排序或者分组？右上角基金管理过于隐蔽。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>03.</b>设置页面是否可以调整字体大小和主题选择。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>04.</b>用户反馈主页和详情页都无法看全基金名称。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+<section class="slide tone-emerald">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 05</div>
+      <h1><span class="title-line">广告位 CMS</span><span class="title-line">与商业化配置能力</span></h1>
+      <div class="response-mini">是否进入重点评估？预览、状态校验、定向配置能否分阶段建设？</div>
+    </aside>
+    <main class="voice-panel dense">
+      <div class="panel-head"><b>原始问题</b><em>5 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>广告位 CMS 配置缺少上线后效果预览 / 状态校验功能，多人操作或多字段修改时，容易出现状态不一致、内容错位。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>希望在广告位 CMS 中增加配置后效果预览、多人操作冲突提示、关键字段修改二次确认。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>03.</b>广告位定向配置灵活性不足，目前依赖持仓金额字段展示，配置流程繁琐，不够智能，无法支持按活动场景快速调整。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>04.</b>广告位发布后存在缓存延迟，需要多次手动刷新才能确认上线状态。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>05.</b>希望新增活动时间段、用户人群标签两类展示规则，支持多规则分层配置与优先级设定。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+<section class="slide tone-violet">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 06</div>
+      <h1><span class="title-line">社区治理</span><span class="title-line">与社区活跃</span></h1>
+      <div class="response-mini">治理规则是否补齐？管理员后台是否优化？互动形态是否有规划？</div>
+    </aside>
+    <main class="voice-panel">
+      <div class="panel-head"><b>原始问题</b><em>2 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>社区形式过于单一，只是发帖，且存在一些素质不高的用户，可以增加社区的多元化、趣味性。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>用户社区禁言标准说明，包括程度、封禁时间、申诉等，以及管理员禁言原因和时间设置。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+<section class="slide tone-purple">
+  <div class="inner topic-grid">
+    <aside class="topic-title">
+      <div class="kicker">议题 07</div>
+      <h1><span class="title-line">产品结构</span><span class="title-line">与协作机制疑问</span></h1>
+      <div class="response-mini">产品取舍逻辑、重点项目节点、需求反馈机制如何同步？</div>
+    </aside>
+    <main class="voice-panel dense">
+      <div class="panel-head"><b>原始问题</b><em>6 条</em></div>
+      <div class="voice-grid">
+        
+      <article class="voice">
+        <p><b>01.</b>AI 工具是否提高了小倍的开发效率？</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>02.</b>能否对产品做一轮大瘦身，剔除冗余的部分？</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>03.</b>需要给到一个可供基金业务端 / 基金公司使用的数据后台完成时间。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>04.</b>在 AI 加持下，哪些原本必须由开发完成的工程可以前置到运营侧，提高效率；应该由开发团队主动发起。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>05.</b>需求排期、产品阶段开发重点没有规则，容易频繁变更。</p>
+      </article>
+    
+
+      <article class="voice">
+        <p><b>06.</b>希望产品开发排期规则制定，未来排期结果全透明。</p>
+      </article>
+    
+      </div>
+    </main>
+  </div>
+</section>
+
+
+  <section class="slide tone-cyan">
+    <div class="inner center">
+      <div class="kicker">NEXT STEP</div>
+      <h2>共创的结果，要进入机制</h2>
+      <div class="actions">
+        <div class="action"><div class="step">01</div><strong>整理问题清单</strong><p>会后 24 小时内整理，保留原始问题与归类议题。</p></div>
+        <div class="action"><div class="step">02</div><strong>产品初步评估</strong><p>标注进入评估、已有计划、需补材料或暂不处理。</p></div>
+        <div class="action"><div class="step">03</div><strong>固定同步机制</strong><p>定期同步需求状态、时间节点和责任人。</p></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <span id="now">01</span><span>/</span><span id="total">11</span>
+  <div class="progress"><span id="bar"></span></div>
+  <span>← → 翻页｜F 全屏</span>
+  <div class="ctrls">
+    <button class="ctrl" id="prev">‹</button>
+    <button class="ctrl" id="next">›</button>
+  </div>
+</div>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+let current = 0;
+const now = document.getElementById('now');
+const total = document.getElementById('total');
+const bar = document.getElementById('bar');
+total.textContent = String(slides.length).padStart(2, '0');
+
+function update() {
+  slides.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+    s.classList.toggle('prev', i < current);
+  });
+  now.textContent = String(current + 1).padStart(2, '0');
+  bar.style.width = ((current + 1) / slides.length * 100) + '%';
+}
+
+function next() { current = Math.min(slides.length - 1, current + 1); update(); }
+function prev() { current = Math.max(0, current - 1); update(); }
+
+document.addEventListener('keydown', e => {
+  if (['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)) next();
+  if (['ArrowLeft','ArrowUp','PageUp'].includes(e.key)) prev();
+  if (e.key.toLowerCase() === 'f') document.documentElement.requestFullscreen?.();
+});
+document.getElementById('next').addEventListener('click', next);
+document.getElementById('prev').addEventListener('click', prev);
+update();
+</script>
+</body>
+</html>
