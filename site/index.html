@@ -1177,36 +1177,36 @@ html,body{width:100%;height:100%;overflow:hidden}
     const highY = y(referenceHigh), currentPoint = points.at(-1);
     const dataIndex = new Map(data.map((row, index) => [row[0], index]));
     const visibleSignals = signals.filter(signal => dataIndex.has(signal.date));
-    const showSignalLabels = visibleSignals.length <= 12;
     const signalMarkup = visibleSignals.map((signal, signalIndex) => {
       const isBuy = signal.type === "buy";
       const rawPx = x(dataIndex.get(signal.date)), py = y(signal.value);
       const overlapsCurrentPoint = isLatestPoint && signal.date === data.at(-1)[0];
       const px = overlapsCurrentPoint ? rawPx - 14 : rawPx;
-      // Only visual decluttering: all dates and raw signals remain in the chart and hover model.
-      // Close neighbours receive compact markers instead of overlapping 18px labels.
-      const closeToNeighbour = [signalIndex - 1, signalIndex + 1].some(index =>
+      // Visual decluttering only: every historic signal remains in the data and tooltip.
+      const compact = [signalIndex - 1, signalIndex + 1].some(index =>
         index >= 0 && index < visibleSignals.length &&
         Math.abs(rawPx - x(dataIndex.get(visibleSignals[index].date))) < 23
       );
-      const compact = closeToNeighbour;
-      const placeBelow = py + 26 <= H - B - 3;
+      const roomAbove = py - 25 >= T + 3;
+      const roomBelow = py + 26 <= H - B - 3;
+      const buyBelow = roomBelow || !roomAbove;
+      const sellBelow = !roomAbove && roomBelow;
       const shape = compact
         ? '<circle class="' + (isBuy ? "signal-buy-compact" : "signal-sell-compact") +
           '" cx="' + px + '" cy="' + py + '" r="5"/>'
         : isBuy
           ? '<line class="signal-buy-stem" x1="' + px + '" y1="' + py + '" x2="' + px +
-            '" y2="' + (placeBelow ? py + 7 : py - 7) + '"/>' +
+            '" y2="' + (buyBelow ? py + 7 : py - 7) + '"/>' +
             '<rect class="signal-buy" x="' + (px - 9) + '" y="' +
-            (placeBelow ? py + 7 : py - 25) + '" width="18" height="18" rx="4"/>' +
+            (buyBelow ? py + 7 : py - 25) + '" width="18" height="18" rx="4"/>' +
             '<text class="signal-buy-glyph" text-anchor="middle" x="' + px +
-            '" y="' + (placeBelow ? py + 20 : py - 12) + '">买</text>'
-          : '<line class="signal-sell-stem" x1="' + px + '" y1="' + (py - 7) +
-            '" x2="' + px + '" y2="' + py + '"/>' +
-            '<rect class="signal-sell" x="' + (px - 9) + '" y="' + (py - 25) +
-            '" width="18" height="18" rx="4"/>' +
+            '" y="' + (buyBelow ? py + 20 : py - 12) + '">买</text>'
+          : '<line class="signal-sell-stem" x1="' + px + '" y1="' + py +
+            '" x2="' + px + '" y2="' + (sellBelow ? py + 7 : py - 7) + '"/>' +
+            '<rect class="signal-sell" x="' + (px - 9) + '" y="' +
+            (sellBelow ? py + 7 : py - 25) + '" width="18" height="18" rx="4"/>' +
             '<text class="signal-sell-glyph" text-anchor="middle" x="' + px +
-            '" y="' + (py - 12) + '">卖</text>';
+            '" y="' + (sellBelow ? py + 20 : py - 12) + '">卖</text>';
       const levels = signal.levels.map(levelText).join("、");
       const title = isBuy
         ? signal.date + " 买入信号｜触发 " + levels + "｜合计 " + signal.parts + " 份"
