@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>多基金波段执行系统 V2.4</title>
+  <title>多基金波段执行系统 V2.5</title>
   <style>
 /* Visual-only upgrade — 小倍 V1.5. No HTML, data or JS changes. */
 :root{
@@ -232,7 +232,7 @@ button,input,select{font:inherit}
 <body>
 <main class="shell">
   <header class="top">
-    <div><div class="eyebrow">MULTI-FUND SWING EXECUTION · V2.4</div><h1 id="fundTitle">多基金波段执行系统</h1><div class="sub" id="fundSub"></div></div>
+    <div><div class="eyebrow">MULTI-FUND SWING EXECUTION · V2.5</div><h1 id="fundTitle">多基金波段执行系统</h1><div class="sub" id="fundSub"></div></div>
     <div class="stamp"><div class="stamp-primary"><span class="live" id="sourceStamp">历史数据已核验</span><span class="nav-date" id="navDate"></span></div><div class="stamp-secondary" id="dataStamp"></div></div>
   </header>
   <section class="overview-section"><div class="overview-head"><span>六基金策略总览 · 点击切换详情</span><span class="mode" id="modeText">策略自动计算</span></div><div class="fund-overview" id="fundOverview" aria-label="六基金策略总览"></div></section>
@@ -469,7 +469,7 @@ button,input,select{font:inherit}
     $("#allocationText").textContent = "核心仓 " + fund.core + "% / 波段仓 " + fund.swing + "%";
     $("#sellRuleText").textContent = fund.minHoldDays ? "回撤归零 + 持有满 " + fund.minHoldDays + " 天" : "回撤归零卖出";
     $("#feeRuleText").textContent = fund.minHoldDays ? "未满足持有期的批次继续锁定，避免短期赎回费。" : "沿用已验收的金信卖出规则。";
-    $("#strategyNoteText").textContent = "本轮策略已投入由回测买入信号自动汇总，与实际执行无关。";
+    $("#strategyNoteText").textContent = "本轮信号已触发份数由历史策略买入信号自动汇总，与实际执行无关。";
   }
 
   // Read-only chart exploration: uses existing adjusted NAV and the frozen signals.
