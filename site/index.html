@@ -403,6 +403,19 @@ html,body{width:100%;height:100%;overflow:hidden}
  .fund-summary-dd{font-size:20px}
  .fund-summary-name{font-size:12px}
 }
+
+@media(min-width:801px) and (max-width:1050px){
+  .hero-head{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  .hero-head>div{height:69px;padding:8px 12px}
+  .hero-head .label{font-size:11px;line-height:15px;margin-bottom:2px}
+  .hero-head .drawdown,.hero-head .next strong{font-size:24px;line-height:31px}
+  .hero-head .action strong{font-size:13px;line-height:21px}
+  .hero-head .hero-position .v{font-size:18px;line-height:24px}
+  .hero-position .progress{margin:3px 0}
+  .hero-head{margin-bottom:6px}
+  .main-pane{padding:9px 10px 7px}
+  .brand-name{font-size:19px}
+}
 @media(max-width:800px){
  html,body{height:auto;overflow:auto}
  .shell{height:auto;min-height:100dvh;display:block;overflow:visible}
