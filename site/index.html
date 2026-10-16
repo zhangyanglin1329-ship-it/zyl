@@ -472,7 +472,105 @@ button,input,select{font:inherit}
     $("#strategyNoteText").textContent = "本轮策略已投入由回测买入信号自动汇总，与实际执行无关。";
   }
 
+  // Read-only chart exploration: uses existing adjusted NAV and the frozen signals.
+  let chartHoverState = null;
+  let chartHoverIndex = null;
+
+  function hideChartHover() {
+    $("#chartTooltip").hidden = true;
+    const overlay = $("#chartCrosshair");
+    if (overlay) overlay.setAttribute("visibility", "hidden");
+    chartHoverIndex = null;
+  }
+
+  function showChartHoverAt(index) {
+    const state = chartHoverState;
+    if (!state || !state.data.length) return;
+    index = Math.max(0, Math.min(state.data.length - 1, index));
+    chartHoverIndex = index;
+    const [date, nav] = state.data[index];
+    const peakAtDate = state.historicalPeaks.get(date);
+    const drawdownAtDate = (nav / peakAtDate - 1) * 100;
+    $("#hoverDate").textContent = date;
+    $("#hoverNav").textContent = nav.toFixed(6);
+    $("#hoverDrawdown").textContent = fmtPct(drawdownAtDate);
+    const signal = state.signalsByDate.get(date);
+    const signalLabel = signal
+      ? (signal.type === "buy"
+        ? "历史买入信号 · 触发 " + signal.levels.map(levelText).join("、") + " · " + signal.parts + " 份"
+        : "历史卖出信号 · 回撤归零 · " + signal.parts + " 份")
+      : "当日无策略买卖信号";
+    $("#hoverSignal").textContent = signalLabel + (state.blocked ? " · 数据待核验，仅供查看" : "");
+    const px = state.L + index * (state.W - state.L - state.R) / Math.max(1, state.data.length - 1);
+    const py = state.y(nav);
+    $("#chartHoverVertical").setAttribute("x1", px);
+    $("#chartHoverVertical").setAttribute("x2", px);
+    $("#chartHoverHorizontal").setAttribute("y1", py);
+    $("#chartHoverHorizontal").setAttribute("y2", py);
+    $("#chartHoverDot").setAttribute("cx", px);
+    $("#chartHoverDot").setAttribute("cy", py);
+    $("#chartCrosshair").setAttribute("visibility", "visible");
+    const tip = $("#chartTooltip"), chart = $("#chart"), canvas = $("#chartCanvas");
+    tip.hidden = false;
+    const screenTransform = chart.getScreenCTM();
+    if (!screenTransform) return;
+    const svgPoint = chart.createSVGPoint();
+    svgPoint.x = px; svgPoint.y = py;
+    const screenPoint = svgPoint.matrixTransform(screenTransform);
+    const canvasRect = canvas.getBoundingClientRect();
+    const pointX = screenPoint.x - canvasRect.left;
+    const pointY = screenPoint.y - canvasRect.top;
+    const width = tip.offsetWidth, height = tip.offsetHeight;
+    const proposedX = pointX + 15 + width > canvasRect.width ? pointX - width - 15 : pointX + 15;
+    tip.style.left = Math.max(6, Math.min(canvasRect.width - width - 6, proposedX)) + "px";
+    tip.style.top = Math.max(6, Math.min(canvasRect.height - height - 6, pointY - height / 2)) + "px";
+  }
+
+  function showChartHoverAtPointer(event) {
+    const state = chartHoverState, chart = $("#chart");
+    if (!state) return;
+    const transform = chart.getScreenCTM();
+    if (!transform) return;
+    const pointer = chart.createSVGPoint();
+    pointer.x = event.clientX; pointer.y = event.clientY;
+    const coords = pointer.matrixTransform(transform.inverse());
+    if (coords.x < state.L || coords.x > state.W - state.R ||
+        coords.y < state.T || coords.y > state.H - state.B) {
+      hideChartHover();
+      return;
+    }
+    const index = Math.round((coords.x - state.L) / (state.W - state.L - state.R) *
+      Math.max(1, state.data.length - 1));
+    showChartHoverAt(index);
+  }
+
+  function initChartHover() {
+    const chart = $("#chart");
+    chart.addEventListener("pointermove", event => {
+      if (event.pointerType !== "touch") showChartHoverAtPointer(event);
+    });
+    chart.addEventListener("pointerdown", event => {
+      if (event.pointerType === "touch" || event.pointerType === "pen")
+        showChartHoverAtPointer(event);
+    });
+    chart.addEventListener("pointerleave", event => {
+      if (event.pointerType !== "touch") hideChartHover();
+    });
+    chart.addEventListener("keydown", event => {
+      if (event.key === "Escape") { hideChartHover(); return; }
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (!chartHoverState || !chartHoverState.data.length) return;
+      event.preventDefault();
+      const length = chartHoverState.data.length;
+      const current = chartHoverIndex === null ? length - 1 : chartHoverIndex;
+      showChartHoverAt(current + (event.key === "ArrowLeft" ? -1 : 1));
+    });
+    chart.addEventListener("blur", hideChartHover);
+  }
+
   function renderChart(view, blocked) {
+    hideChartHover();
+    chartHoverState = null;
     const { fund, dd, next, signals } = view;
     const latest = new Date(fund.latestDate + "T00:00:00Z");
     const firstDate = fund.data[0][0];
@@ -551,10 +649,30 @@ button,input,select{font:inherit}
     const sellCount = visibleSignals.filter(signal => signal.type === "sell").length;
     const legend = '<g class="signal-legend"><circle class="signal-buy" cx="' + (W - 220) + '" cy="18" r="4"/><text x="' + (W - 210) + '" y="22">买入信号</text><rect class="signal-sell" x="' + (W - 130) + '" y="14" width="8" height="8"/><text x="' + (W - 116) + '" y="22">卖出信号</text></g>';
     const nextLine = nextValue == null ? "" : '<line class="next-buy-line" x1="' + L + '" y1="' + y(nextValue) + '" x2="' + (W - R) + '" y2="' + y(nextValue) + '"/><text class="chart-label next-buy" x="' + (L + 10) + '" y="' + (y(nextValue) + 16) + '">下一买点 ' + levelText(next[0]) + ' · 复权净值 ' + nextValue.toFixed(6) + "</text>";
+    const chartHoverMarkup = '<rect class="chart-hit" x="' + L + '" y="' + T +
+      '" width="' + (W - L - R) + '" height="' + (H - T - B) +
+      '" fill="transparent" style="cursor:crosshair"/>' +
+      '<g class="chart-crosshair" id="chartCrosshair" visibility="hidden" aria-hidden="true">' +
+      '<line class="hover-vertical" id="chartHoverVertical" x1="' + L + '" x2="' + L +
+      '" y1="' + T + '" y2="' + (H - B) + '"/>' +
+      '<line class="hover-horizontal" id="chartHoverHorizontal" x1="' + L +
+      '" x2="' + (W - R) + '" y1="' + T + '" y2="' + T + '"/>' +
+      '<circle id="chartHoverDot" cx="' + L + '" cy="' + T + '" r="5"/>' +
+      '</g>';
     const pointTitle = isLatestPoint ? "当前 " + fund.current.toFixed(6) : "区间末值 " + data.at(-1)[1].toFixed(6);
     const pointSub = isLatestPoint ? fmtPct(dd) : data.at(-1)[0];
     const highLabel = isLatestPoint ? "策略基准高点" : "区间最高点";
-    $("#chart").innerHTML = grid + '<line class="high-line" x1="' + L + '" y1="' + highY + '" x2="' + (W - R) + '" y2="' + highY + '"/><text class="chart-label high" x="' + (L + 10) + '" y="' + (highY - 8) + '">' + highLabel + ' · ' + referencePeakDate + "</text>" + nextLine + '<path class="curve-shadow" d="' + path + '"/><path class="curve" d="' + path + '"/><circle class="current-point" cx="' + currentPoint[0] + '" cy="' + currentPoint[1] + '" r="6"/><text class="chart-value" text-anchor="end" x="' + (currentPoint[0] - 12) + '" y="' + (currentPoint[1] - 13) + '">' + pointTitle + '</text><text class="chart-label" text-anchor="end" x="' + (currentPoint[0] - 12) + '" y="' + (currentPoint[1] + 19) + '">' + pointSub + "</text>" + signalMarkup + dateLabels + legend;
+    $("#chart").innerHTML = grid + '<line class="high-line" x1="' + L + '" y1="' + highY + '" x2="' + (W - R) + '" y2="' + highY + '"/><text class="chart-label high" x="' + (L + 10) + '" y="' + (highY - 8) + '">' + highLabel + ' · ' + referencePeakDate + "</text>" + nextLine + '<path class="curve-shadow" d="' + path + '"/><path class="curve" d="' + path + '"/><circle class="current-point" cx="' + currentPoint[0] + '" cy="' + currentPoint[1] + '" r="6"/><text class="chart-value" text-anchor="end" x="' + (currentPoint[0] - 12) + '" y="' + (currentPoint[1] - 13) + '">' + pointTitle + '</text><text class="chart-label" text-anchor="end" x="' + (currentPoint[0] - 12) + '" y="' + (currentPoint[1] + 19) + '">' + pointSub + "</text>" + signalMarkup + dateLabels + legend + chartHoverMarkup;
+    const historicalPeaks = new Map();
+    let historicalPeak = -Infinity;
+    for (const [date, value] of fund.data) {
+      historicalPeak = Math.max(historicalPeak, value);
+      historicalPeaks.set(date, historicalPeak);
+    }
+    chartHoverState = {
+      data, W, H, L, R, T, B, y, blocked, historicalPeaks,
+      signalsByDate: new Map(visibleSignals.map(signal => [signal.date, signal])),
+    };
     $("#chartCaption").textContent = "买入 " + buyCount + " · 卖出 " + sellCount + (blocked ? " · 历史信号仅供查看" : "");
     $("#chartCount").textContent = "分红再投资复权净值 · " + data.length + " 个数据点";
   }
@@ -625,7 +743,7 @@ button,input,select{font:inherit}
   document.addEventListener("visibilitychange", reloadWhenReturning);
   window.addEventListener("focus", reloadWhenReturning);
 
-  initFundOverview(); render();
+  initFundOverview(); initChartHover(); render();
 })();</script>
 </body>
 </html>
