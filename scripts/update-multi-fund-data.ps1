@@ -47,7 +47,7 @@ function Set-EmbeddedStatus($payload) {
 function Write-Status([bool]$success, [string]$message, $details) {
   $payload = [ordered]@{
     success = $success
-    checkedAt = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+    checkedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ', $culture)
     message = $message
     details = $details
   }
