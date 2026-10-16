@@ -5,14 +5,169 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>多基金波段执行系统 V2.4</title>
   <style>
-    :root{--ink:#172033;--muted:#747f91;--line:#e2e6ec;--paper:#fff;--bg:#f4f5f7;--blue:#2354d1;--blue-soft:#edf2ff;--red:#d24747;--amber:#b37811;--green:#177a52;--grey:#a3abb8}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;font-variant-numeric:tabular-nums}button,input,select{font:inherit}.shell{max-width:1480px;margin:auto;padding:30px 42px 60px}
-    .top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:18px}.eyebrow{font-size:12px;letter-spacing:.15em;color:var(--blue);font-weight:700}.top h1{font-size:26px;margin:7px 0 5px}.sub,.stamp{font-size:12px;color:var(--muted);line-height:1.8}.stamp{text-align:right}.live{color:var(--green);font-weight:700}.live.warning{color:var(--amber)}.live.error{color:var(--red)}.overview-section{margin-bottom:14px}.overview-head{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #cfd4dd;padding:9px 0 7px;font-size:11px;color:var(--muted)}.mode{font-size:11px;color:var(--blue);font-weight:700}.fund-overview{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border-top:1px solid #cfd4dd;border-bottom:1px solid #cfd4dd;background:white}.fund-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 8px;border:0;border-right:1px solid var(--line);background:transparent;text-align:left;padding:10px 12px;color:var(--ink);cursor:pointer}.fund-summary:last-child{border-right:0}.fund-summary:hover{background:#f7f8fa}.fund-summary.active{background:var(--blue-soft);box-shadow:inset 0 3px 0 var(--blue)}.fund-summary-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fund-summary-code,.fund-summary-next,.fund-summary-parts,.fund-summary-state{font-size:10px;color:var(--muted)}.fund-summary-code,.fund-summary-next,.fund-summary-state{text-align:right}.fund-summary-dd{font-size:18px;font-weight:760}.fund-summary-state{font-weight:700}.fund-summary.buy .fund-summary-state{color:var(--red)}.fund-summary.sell .fund-summary-state{color:var(--green)}.fund-summary.near .fund-summary-state{color:var(--amber)}.system-alert{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:11px 14px;margin-bottom:14px;border-left:3px solid var(--amber);background:#fff8e8;color:#755211;font-size:12px}.system-alert[hidden]{display:none}.system-alert button{border:1px solid #d8ba78;background:white;color:#755211;padding:6px 10px;cursor:pointer;white-space:nowrap}
-    .hero{background:var(--paper);border:1px solid var(--line);padding:26px 28px 20px}.hero-head{display:grid;grid-template-columns:minmax(210px,1fr) auto minmax(260px,auto) auto;gap:38px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:20px}.label{font-size:12px;color:var(--muted);margin-bottom:7px}.drawdown{font-size:44px;font-weight:760;color:var(--red);letter-spacing:-.04em;line-height:1}.next strong,.action strong{display:block;font-size:23px}.action strong{max-width:430px;color:var(--ink)}.action strong.buy{color:var(--red)}.action strong.sell{color:var(--green)}.action strong.stop{color:var(--amber)}.hero-position{min-width:165px}.hero-position .v{font-size:23px;font-weight:760;white-space:nowrap}.hero-position .progress{margin:9px 0 5px}.chart-wrap{height:510px;padding-top:18px}.performance-head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line);padding-bottom:9px}.performance-head h2{font-size:18px;margin:0}.chart-caption{font-size:12px;color:var(--muted)}.range-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0 5px}.range-tabs{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.range-btn{border:0;background:transparent;color:var(--ink);padding:7px 12px;border-radius:4px;cursor:pointer;font-size:12px;white-space:nowrap}.range-btn:hover{background:#f3f5f8}.range-btn.active{background:var(--blue-soft);color:var(--blue);font-weight:700}.custom-range{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}.custom-range input{border:1px solid #cfd5df;background:white;color:var(--ink);padding:6px 8px;font-size:12px}.custom-range[hidden]{display:none}.chart-wrap svg{width:100%;height:calc(100% - 92px);overflow:visible}.grid-line{stroke:#edf0f4;stroke-width:1}.axis{fill:#929cad;font-size:11px}.curve-shadow{fill:none;stroke:#dce5fb;stroke-width:8;opacity:.75}.curve{fill:none;stroke:var(--blue);stroke-width:2.2}.high-line{stroke:var(--red);stroke-width:1.2;stroke-dasharray:6 6}.next-buy-line{stroke:var(--blue);stroke-width:1.2;stroke-dasharray:4 5}.current-point{fill:white;stroke:var(--blue);stroke-width:3}.chart-label{font-size:12px;fill:var(--muted)}.chart-label.high{fill:var(--red);font-weight:700}.chart-label.next-buy{fill:var(--blue);font-weight:700}.chart-value{font-size:13px;fill:var(--ink);font-weight:700}.signal-buy{fill:var(--red);stroke:white;stroke-width:1.2}.signal-sell{fill:var(--green);stroke:white;stroke-width:1.2}.signal-marker{filter:drop-shadow(0 1px 2px rgba(23,32,51,.18))}.signal-text{font-size:10px;font-weight:800}.signal-text.buy{fill:var(--red)}.signal-text.sell{fill:var(--green)}.signal-legend text{font-size:11px;fill:var(--muted)}
-    .content{margin-top:26px}.panel{background:white;border:1px solid var(--line);padding:24px 26px}.section-title{margin-bottom:20px}.section-title h2{font-size:18px;margin:0 0 7px}.section-heading>span{font-size:12px;color:var(--muted)}.k{font-size:11px;color:var(--muted);letter-spacing:.06em}.v{font-size:25px;font-weight:760;margin:6px 0}.progress{height:5px;background:#e5e8ee}.progress i{display:block;height:100%;background:var(--blue);width:0}.small{font-size:12px;color:var(--muted);line-height:1.65}.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:8px}.step{min-height:74px;border-top:2px solid var(--line);padding:9px 5px}.step .pct{font-size:14px;font-weight:700}.step .qty,.step .state{font-size:11px;color:var(--muted);margin-top:5px}.step .state{margin-top:8px}.step.done{border-color:#7d96d0;color:#536683}.step.done .state{color:var(--green)}.step.current{border-color:var(--blue);background:var(--blue-soft);padding-left:9px}.step.current .pct,.step.current .state{color:var(--blue);font-weight:700}
-    .notes{border-top:1px solid #cfd4dd;margin-top:26px;padding-top:16px;font-size:11px;color:#818b9a;line-height:1.75}.notes-title{font-weight:700;color:#5f6a7a;margin-bottom:5px}.notes p{margin:3px 0}.foot{display:flex;justify-content:space-between;gap:20px;margin-top:12px;font-size:11px;color:#9aa2af}
-    @media(max-width:1180px){.hero-head{grid-template-columns:1fr 1fr;gap:22px}.action strong{max-width:none}.fund-overview{grid-template-columns:repeat(3,1fr)}.fund-summary:nth-child(3){border-right:0}.fund-summary:nth-child(-n+3){border-bottom:1px solid var(--line)}}
-    @media(max-width:720px){.shell{padding:22px}.top{align-items:flex-start;flex-direction:column}.stamp{text-align:left}.fund-overview{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(180px,1fr);overflow-x:auto}.fund-summary{border-bottom:0!important;border-right:1px solid var(--line)!important}.hero-head{grid-template-columns:1fr;gap:20px}.chart-wrap{height:470px}.performance-head{align-items:flex-start;flex-direction:column;gap:5px}.range-row{align-items:flex-start}.range-tabs{gap:3px}.range-btn{padding:6px 9px}.chart-wrap svg{height:calc(100% - 118px)}.foot{flex-direction:column}}
+/* Visual-only upgrade — 小倍 V1.5. No HTML, data or JS changes. */
+:root{
+  --ink:#1F2933;--text-2:#55616A;--muted:#66747B;--quiet:#7B898F;
+  --bg:#FAF8F4;--paper:#FFFFFF;--soft:#F4F6F5;
+  --teal:#0B4D5B;--teal-strong:#083E49;--teal-600:#0F6B7C;
+  --teal-400:#78B7B4;--teal-200:#CFE6E4;--teal-100:#DDEDEC;--teal-50:#EFF6F5;
+  --line:#D6E0DF;--line-strong:#C8D4D3;
+  --rise:#D94248;--rise-text:#C9363D;
+  --fall:#16895B;--fall-text:#137A50;
+  --amber:#C88316;--amber-text:#8D610D;--amber-bg:#FFF7E8;
+  --shadow:0 2px 8px rgba(22,23,25,.06);
+  --font:Inter,"PingFang SC","Hiragino Sans GB","Source Han Sans SC","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;max-width:100%;background:var(--bg);color:var(--ink)}
+body{font-family:var(--font);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}
+button{touch-action:manipulation}
+.shell{max-width:1280px;margin:0 auto;padding:36px 28px 64px}
+
+/* Header — hierarchy before decoration */
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
+.eyebrow{color:var(--teal-600);font-size:12px;line-height:18px;font-weight:600;letter-spacing:.12em}
+.top h1{margin:8px 0 4px;font-size:30px;line-height:38px;font-weight:600;letter-spacing:-.025em;color:var(--ink)}
+.sub,.stamp{font-size:13px;line-height:20px;color:var(--text-2)}
+.stamp{text-align:right;max-width:420px}
+.live{color:var(--teal);font-weight:600}
+.live.warning{color:var(--amber-text)}
+.live.error{color:#B9363E}
+
+/* Six independent interactive fund objects */
+.overview-section{margin-bottom:20px}
+.overview-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:0 2px 12px;color:var(--text-2);font-size:13px;line-height:20px;font-weight:500}
+.mode{color:var(--teal-600);font-size:12px;line-height:18px;font-weight:600}
+.fund-overview{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.fund-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;align-content:start;gap:6px 7px;min-width:0;min-height:142px;border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:15px 13px;text-align:left;color:var(--ink);cursor:pointer;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+.fund-summary:hover{background:#F9FCFB;border-color:var(--line-strong)}
+.fund-summary:focus-visible{outline:2px solid var(--teal-600);outline-offset:2px}
+.fund-summary.active{border-color:var(--teal-400);background:var(--teal-50);box-shadow:inset 0 3px 0 var(--teal)}
+.fund-summary-name{font-size:13px;line-height:20px;font-weight:600;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.fund-summary-code,.fund-summary-next,.fund-summary-parts,.fund-summary-state{font-size:11px;line-height:17px;color:var(--muted)}
+.fund-summary-code,.fund-summary-next,.fund-summary-state{text-align:right}
+.fund-summary-dd{font-size:25px;line-height:33px;font-weight:600;letter-spacing:-.035em;color:var(--fall-text)}
+.fund-summary-state{font-weight:600}
+.fund-summary.buy .fund-summary-state{color:var(--rise-text)}
+.fund-summary.sell .fund-summary-state{color:var(--fall-text)}
+.fund-summary.near .fund-summary-state{color:var(--amber-text)}
+.fund-summary.blocked .fund-summary-state{color:var(--amber-text)}
+
+/* System exception indicator */
+.system-alert{display:flex;justify-content:space-between;align-items:center;gap:20px;margin:0 0 18px;padding:14px 16px;background:var(--amber-bg);border:1px solid #EAD9B5;border-radius:12px;color:#76530C;font-size:13px;line-height:20px}
+.system-alert[hidden]{display:none}
+.system-alert button{flex-shrink:0;min-height:40px;padding:0 14px;border-radius:12px;border:1px solid #D7BE8B;background:#fff;color:#76530C;cursor:pointer}
+.system-alert button:hover{background:#FFFDF8}
+.system-alert button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* Strategy-first hero */
+.hero{border:1px solid var(--line);border-radius:24px;background:var(--paper);padding:28px 28px 24px}
+.hero-head{display:grid;grid-template-columns:minmax(160px,1fr) minmax(130px,.7fr) minmax(230px,1.35fr) minmax(178px,1fr);gap:28px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:24px}
+.hero-head>div{min-width:0}
+.label{margin:0 0 8px;color:var(--muted);font-size:13px;line-height:20px}
+.drawdown{font-size:44px;line-height:48px;font-weight:600;letter-spacing:-.045em;color:var(--fall-text);white-space:nowrap}
+.next strong,.action strong{display:block;color:var(--ink);font-size:22px;line-height:30px;font-weight:600;letter-spacing:-.025em;overflow-wrap:anywhere}
+.action strong.buy{color:var(--rise-text)}
+.action strong.sell{color:var(--fall-text)}
+.action strong.stop,.action strong.blocked{color:var(--amber-text)}
+.hero-position{min-width:0}
+.hero-position .v{margin:0;font-size:23px;line-height:32px;font-weight:600;letter-spacing:-.02em;color:var(--ink);white-space:nowrap}
+.hero-position .progress{margin:10px 0 6px}
+
+/* Performance visualization */
+.chart-wrap{height:530px;padding-top:24px}
+.performance-head{display:flex;justify-content:space-between;align-items:baseline;gap:18px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.performance-head h2{margin:0;color:var(--ink);font-size:20px;line-height:28px;font-weight:600}
+.chart-caption{font-size:12px;line-height:18px;color:var(--muted);text-align:right}
+.range-row{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;padding:12px 0 7px}
+.range-tabs{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.range-btn{min-height:36px;padding:0 11px;background:transparent;border:1px solid transparent;border-radius:999px;color:var(--text-2);font-size:13px;line-height:20px;white-space:nowrap;cursor:pointer;transition:background .16s ease,color .16s ease}
+.range-btn:hover{background:var(--soft)}
+.range-btn.active{border-color:var(--teal-200);background:var(--teal-50);color:var(--teal);font-weight:600}
+.range-btn:focus-visible{outline:2px solid var(--teal-600);outline-offset:2px}
+.custom-range{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.custom-range input{height:36px;min-width:0;max-width:146px;padding:0 8px;color:var(--ink);border:1px solid var(--line);border-radius:8px;background:#fff;font-size:12px}
+.custom-range[hidden]{display:none}
+.custom-range input:focus-visible{outline:2px solid var(--teal-600);outline-offset:2px}
+.chart-wrap svg{width:100%;height:calc(100% - 96px);overflow:visible}
+.grid-line{stroke:#E8EFEE;stroke-width:1}
+.axis{fill:var(--muted);font-size:11px}
+.curve-shadow{fill:none;stroke:var(--teal-200);stroke-width:7;opacity:.6}
+.curve{fill:none;stroke:var(--teal-600);stroke-width:2.3}
+.high-line{stroke:var(--rise);stroke-width:1.2;stroke-dasharray:6 6}
+.next-buy-line{stroke:var(--teal);stroke-width:1.2;stroke-dasharray:4 5}
+.current-point{fill:#fff;stroke:var(--teal);stroke-width:3}
+.chart-label{font-size:12px;fill:var(--text-2)}
+.chart-label.high{fill:var(--rise-text);font-weight:600}
+.chart-label.next-buy{fill:var(--teal);font-weight:600}
+.chart-value{font-size:13px;fill:var(--ink);font-weight:600}
+.signal-buy{fill:var(--rise);stroke:#fff;stroke-width:1.2}
+.signal-sell{fill:var(--fall);stroke:#fff;stroke-width:1.2}
+.signal-marker{filter:drop-shadow(0 1px 2px rgba(31,41,51,.16))}
+.signal-text{font-size:10px;font-weight:700}
+.signal-text.buy{fill:var(--rise-text)}
+.signal-text.sell{fill:var(--fall-text)}
+.signal-legend text{font-size:11px;fill:var(--text-2)}
+
+/* Fixed buy-step ladder */
+.content{margin-top:24px}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:24px}
+.section-title{margin-bottom:18px}
+.section-title h2,.section-heading h2{margin:0 0 6px;font-size:20px;line-height:28px;font-weight:600;color:var(--ink)}
+.section-heading>span,.section-title span{font-size:13px;line-height:20px;color:var(--muted)}
+.k{color:var(--muted);font-size:12px;line-height:18px;letter-spacing:.04em}
+.v{margin:6px 0;font-size:25px;line-height:32px;font-weight:600}
+.progress{height:6px;background:var(--teal-100);border-radius:999px;overflow:hidden}
+.progress i{display:block;width:0;height:100%;background:var(--teal-600);border-radius:999px}
+.small{color:var(--text-2);font-size:12px;line-height:18px}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:8px}
+.step{min-height:91px;padding:11px 10px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.step .pct{color:var(--ink);font-size:15px;line-height:22px;font-weight:600}
+.step .qty,.step .state{margin-top:6px;font-size:12px;line-height:17px;color:var(--muted)}
+.step .state{margin-top:8px}
+.step.done{background:var(--soft);border-color:#D4E6E2}
+.step.done .state{color:var(--fall-text)}
+.step.current{border-color:var(--teal-400);background:var(--teal-50)}
+.step.current .pct,.step.current .state{color:var(--teal);font-weight:600}
+
+/* Notes: editorial, not another card */
+.notes{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;line-height:21px;color:var(--text-2)}
+.notes-title{margin-bottom:8px;font-size:14px;line-height:20px;font-weight:600;color:var(--ink)}
+.notes p{margin:6px 0}
+.foot{display:flex;justify-content:space-between;gap:20px;margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;line-height:18px;color:var(--muted)}
+
+@media(max-width:1180px){
+  .shell{padding:28px 24px 56px}
+  .hero-head{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 30px}
+  .fund-overview{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .shell{padding:22px 16px 48px}
+  .top{align-items:flex-start;flex-direction:column;gap:12px;margin-bottom:24px}
+  .top h1{font-size:26px;line-height:34px}
+  .stamp{text-align:left}
+  .overview-head{align-items:flex-start;gap:6px;flex-wrap:wrap}
+  .fund-overview{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(188px,1fr);overflow-x:auto;padding-bottom:5px}
+  .fund-summary{min-height:138px}
+  .hero{padding:20px 18px;border-radius:20px}
+  .hero-head{grid-template-columns:1fr;gap:16px;padding-bottom:20px}
+  .drawdown{font-size:40px;line-height:44px}
+  .chart-wrap{height:500px;padding-top:20px}
+  .performance-head{align-items:flex-start;flex-direction:column;gap:4px}
+  .chart-caption{text-align:left}
+  .range-row{align-items:flex-start}
+  .range-tabs{gap:2px}
+  .range-btn{padding:0 10px}
+  .chart-wrap svg{height:calc(100% - 122px)}
+  .panel{padding:20px 18px}
+  .steps{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+  .foot{flex-direction:column;gap:8px}
+  .system-alert{align-items:flex-start;flex-direction:column;gap:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .fund-summary,.range-btn{transition:none}
+}
   </style>
 </head>
 <body>
