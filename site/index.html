@@ -650,6 +650,95 @@ html,body{width:100%;height:100%;overflow:hidden}
   .fund-summary-index,.fund-summary-code,.fund-summary-chevron,.fund-summary-hint,.fund-sparkline{display:none}
 }
 
+
+/* Final chart-led micro-adjustment: more vertical plot, quieter context, distinct sell icons. */
+@media(min-width:801px){
+  .top{min-height:58px;padding-top:7px;padding-bottom:7px}
+  .brand-name{font-size:21px;line-height:27px}
+  .brand-icon{width:29px;height:29px;flex-basis:29px}
+  .stamp-secondary{font-size:10px;line-height:14px}
+
+  .main-pane{padding-top:6px;padding-bottom:5px}
+  .fund-heading{
+    display:flex;align-items:baseline;gap:12px;min-height:31px;
+    padding:0 3px 2px;white-space:nowrap;
+  }
+  .fund-heading h1{
+    font-size:clamp(18px,1.5vw,22px);line-height:27px;
+    flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .fund-heading .sub{
+    margin:0;flex:1 1 auto;min-width:0;font-size:10px;line-height:15px;
+    color:#A1ADB5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+
+  .hero-head{padding-top:0;padding-bottom:4px;margin-bottom:5px}
+  .hero-head>div,
+  .hero-head .action,.hero-head .metric,.hero-head .next,.hero-head .hero-position{
+    height:51px;min-height:0;padding:3px 10px 2px;
+  }
+  .hero-head .label{font-size:10px;line-height:14px;margin:0 0 2px;color:#9AA8B0}
+  .hero-head .drawdown{font-size:clamp(25px,2vw,30px);line-height:31px}
+  .hero-head .next strong{font-size:clamp(22px,1.85vw,27px);line-height:31px}
+  .hero-head .action strong{font-size:clamp(13px,1.1vw,17px);line-height:23px}
+  .hero-head .hero-position .v{font-size:clamp(16px,1.35vw,20px);line-height:25px}
+  .hero-head .hero-position .progress{margin:3px 0 0}
+  .hero-head .hero-position{opacity:.57}
+
+  .chart-wrap{padding:8px 12px 4px}
+  .range-row{padding:4px 0 1px}
+  .chart-canvas{min-height:0;flex:1 1 auto}
+
+  .content{margin-top:4px}
+  .panel{padding:5px 9px 5px}
+  .section-title{margin-bottom:0}
+  .section-heading h2{font-size:12px;line-height:18px}
+  .steps{gap:3px;padding:3px 0 0}
+  .step{min-height:47px;padding:5px 3px 3px}
+  .step:before{top:-4px}
+  .step .pct{font-size:11px;line-height:14px}
+  .step .qty,.step .state{font-size:9px;line-height:12px;margin-top:2px}
+  .notes{margin-top:3px;min-height:17px}
+  .note-main{opacity:.8}
+
+  /* Restore a clearly visible amber state for the one actionable next level. */
+  .step.current{
+    background:#FFEDD5;border:1px solid #D6932A;
+    box-shadow:inset 0 0 0 1px rgba(214,147,42,.12);
+  }
+  .step.current:before{background:#DD880E;box-shadow:0 0 0 2px #FFE4BB}
+  .step.current .pct,.step.current .state{color:#9D5D05;font-weight:700}
+  .step.current .qty{color:#A76D18;font-weight:550}
+}
+@media(min-width:801px) and (max-width:1130px){
+  .fund-heading .sub{display:none}
+  .hero-head .action strong{font-size:12px;line-height:20px}
+}
+@media(min-width:801px) and (max-height:710px){
+  .top{min-height:48px;padding-top:4px;padding-bottom:4px}
+  .fund-heading{min-height:27px}
+  .fund-heading h1{line-height:24px}
+  .hero-head>div,.hero-head .action,.hero-head .metric,
+  .hero-head .next,.hero-head .hero-position{height:47px}
+  .hero-head .drawdown,.hero-head .next strong{line-height:27px}
+  .hero-head .action strong{line-height:20px}
+  .step{min-height:43px;padding-top:3px;padding-bottom:2px}
+  .chart-wrap{padding-top:5px}
+}
+/* Chart = cool ocean teal; sell = vivid green boxed text, with a white contour. */
+.curve{stroke:#176F8C;stroke-width:2.25}
+.curve-shadow{stroke:#CFE9E8;stroke-width:6;opacity:.55}
+.signal-buy{fill:#D94248;stroke:#fff;stroke-width:1.8}
+.signal-sell{fill:#16864A;stroke:#fff;stroke-width:2.6;paint-order:stroke fill}
+.signal-sell-stem{stroke:#16864A;stroke-width:1.6;stroke-linecap:round;pointer-events:none}
+.signal-sell-glyph{
+  fill:#fff;font-size:10px;font-weight:700;
+  font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  pointer-events:none;
+}
+.signal-marker.sell{filter:drop-shadow(0 1px 2px rgba(17,80,51,.30))}
+
+
   </style>
 </head>
 <body>
@@ -1071,12 +1160,14 @@ html,body{width:100%;height:100%;overflow:hidden}
       const px = overlapsCurrentPoint ? rawPx - 14 : rawPx;
       const shape = isBuy
         ? '<path class="signal-buy" d="M ' + px + ' ' + (py - 9) + ' L ' + (px - 6) + ' ' + (py + 2) + ' L ' + (px + 6) + ' ' + (py + 2) + ' Z"/>'
-        : '<path class="signal-sell" d="M ' + px + ' ' + (py + 9) + ' L ' + (px - 6) + ' ' + (py - 2) + ' L ' + (px + 6) + ' ' + (py - 2) + ' Z"/>';
+        : '<line class="signal-sell-stem" x1="' + px + '" y1="' + (py - 7) + '" x2="' + px + '" y2="' + py + '"/>' +
+          '<rect class="signal-sell" x="' + (px - 9) + '" y="' + (py - 25) + '" width="18" height="18" rx="4"/>' +
+          '<text class="signal-sell-glyph" text-anchor="middle" x="' + px + '" y="' + (py - 12) + '">卖</text>';
       const levels = signal.levels.map(levelText).join("、");
       const title = isBuy
         ? signal.date + " 买入信号｜触发 " + levels + "｜合计 " + signal.parts + " 份"
         : signal.date + " 卖出信号｜回撤归零｜本轮信号 " + signal.parts + " 份";
-      const label = showSignalLabels ? '<text class="signal-text ' + signal.type + '" x="' + (px + 8) + '" y="' + (py + (isBuy ? -7 : 13)) + '">' + (isBuy ? "买" : "卖") + "</text>" : "";
+      const label = isBuy && showSignalLabels ? '<text class="signal-text buy" x="' + (px + 8) + '" y="' + (py - 7) + '">买</text>' : "";
       return '<g class="signal-marker ' + signal.type + '"><title>' + title + "</title>" + shape + label + "</g>";
     }).join("");
     const buyCount = visibleSignals.filter(signal => signal.type === "buy").length;
