@@ -125,8 +125,9 @@
     return { fund, dd, signals, cycleBuys, triggered, currentParts, next, latestSignal };
   }
 
-  function actionFor(view) {
+  function actionFor(view, health) {
     const { fund, latestSignal, next, currentParts } = view;
+    if (health.blocked) return { text: "数据待核验 · 暂停策略信号", mode: "blocked" };
     if (latestSignal?.type === "buy") return { text: latestSignal.date + " 买入信号 · 买 " + latestSignal.parts + " 份", mode: "buy", parts: latestSignal.parts };
     if (latestSignal?.type === "sell") return { text: latestSignal.date + " 卖出信号 · 卖 " + latestSignal.parts + " 份", mode: "sell", parts: latestSignal.parts };
     if (next) return { text: "等待 · 到 " + levelText(next[0]) + " 买 " + next[1] + " 份", mode: "wait", button: "当前无待确认操作" };
@@ -135,31 +136,46 @@
   }
 
   function parseCheckedAt(value) {
-    const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
-    return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5]), Number(match[6])) : null;
+    const raw = String(value || "").trim();
+    const normalized = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(raw)
+      ? raw.replace(" ", "T") + "Z" : raw;
+    const parsed = new Date(normalized);
+    return normalized && !Number.isNaN(parsed.getTime()) ? parsed : null;
   }
 
-  function dataHealth() {
+  // The update runs at 09:30 Beijing time each day; allow 90 minutes for publication.
+  // Weekends are skipped. Market holidays may require manual verification.
+  function expectedLatestNavDate(now) {
+    const china = new Date(now.getTime() + 8 * 3600000);
+    const beforePublishWindow = china.getUTCHours() < 11;
+    const day = new Date(Date.UTC(china.getUTCFullYear(), china.getUTCMonth(),
+      china.getUTCDate() - (beforePublishWindow ? 2 : 1)));
+    while (day.getUTCDay() === 0 || day.getUTCDay() === 6) day.setUTCDate(day.getUTCDate() - 1);
+    return day.toISOString().slice(0, 10);
+  }
+
+  function dataHealth(now = new Date()) {
+    if (UPDATE_STATUS.success !== true) return { blocked: true, level: "error", text: "自动更新失败，历史净值保持不变。原因：" + (UPDATE_STATUS.message || "未知") + "。已暂停策略信号。" };
     const checked = parseCheckedAt(UPDATE_STATUS.checkedAt);
-    const now = new Date();
-    if (UPDATE_STATUS.success !== true) return { blocked: true, level: "error", text: "自动更新失败，净值数据已保留且没有变更。原因：" + (UPDATE_STATUS.message || "未知") + "。系统会按计划自动重试。" };
-    if (!checked || Number.isNaN(checked.getTime())) return { blocked: true, level: "error", text: "缺少有效的自动更新时间，请先更新后再使用策略结果。" };
-    const ageHours = (now - checked) / 3600000;
-    if (ageHours < -1 || ageHours > 36) return { blocked: true, level: "warning", text: "自动更新状态已过期，请先手动更新并刷新页面。" };
-    const expectedToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 20, 0);
-    const afterDailyWindow = now.getHours() > 23 || (now.getHours() === 23 && now.getMinutes() >= 40);
-    if (afterDailyWindow && checked < expectedToday) return { blocked: true, level: "warning", text: "今日自动更新后页面尚未刷新，请刷新后再使用策略结果。" };
-    return { blocked: false, level: "ok", text: "双源核验成功 · " + UPDATE_STATUS.checkedAt };
+    if (!checked) return { blocked: true, level: "error", text: "缺少有效的自动更新时间，已暂停策略信号。" };
+    const ageHours = (now.getTime() - checked.getTime()) / 3600000;
+    if (ageHours < -1 || ageHours > 36) return { blocked: true, level: "warning", text: "最近一次净值核验超过36小时或时间异常，已暂停策略信号。" };
+    const expected = expectedLatestNavDate(now);
+    const stale = FUND_ORDER.filter(code => {
+      const date = DB[code]?.latestDate;
+      return typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date < expected;
+    });
+    if (stale.length) return { blocked: true, level: "warning", text: "净值日期早于预期基准 " + expected + "：" + stale.join("、") + "。可能涉及节假日或停牌，请人工核实后使用策略信号。" };
+    return { blocked: false, level: "ok", text: "净值核验正常 · " + UPDATE_STATUS.checkedAt };
   }
 
-  function renderHeader(view) {
+  function renderHeader(view, health) {
     const { fund } = view;
-    const health = dataHealth();
     $("#fundTitle").textContent = fund.name;
     $("#fundSub").textContent = fund.category + " · 基金代码 " + fund.code + " · 分红再投资复权净值";
     const checkLabel = UPDATE_STATUS.success === true ? "成功检查 " + (UPDATE_STATUS.checkedAt || "未知") : "检查失败 " + (UPDATE_STATUS.checkedAt || "未知") + " · 净值未变";
     $("#dataStamp").textContent = "净值日期 " + fund.latestDate + " · 历史 " + fund.rows + " 条 · " + checkLabel + " · 页面≤3分钟自动刷新";
-    $("#sourceStamp").textContent = UPDATE_STATUS.success === true ? "双源自动更新已核验" : "自动更新失败 · 净值已保留";
+    $("#sourceStamp").textContent = health.blocked ? "数据待核验 · 策略暂停" : "双源自动更新已核验";
     $("#sourceStamp").className = "live " + health.level;
     const alertText = health.blocked ? health.text : "";
     $("#systemAlertText").textContent = alertText;
@@ -169,24 +185,24 @@
   function renderMetrics(view, action) {
     const { fund, dd, next, currentParts } = view;
     $("#drawdownText").textContent = fmtPct(dd);
-    $("#nextText").textContent = next ? levelText(next[0]) : "—";
+    $("#nextText").textContent = action.mode !== "blocked" && next ? levelText(next[0]) : "—";
     $("#actionText").textContent = action.text;
     $("#actionText").className = action.mode;
     $("#usedText").textContent = currentParts;
     $("#totalPartsText").textContent = fund.totalParts;
     $("#remainText").textContent = Math.max(0, fund.totalParts - currentParts);
     $("#progressBar").style.width = Math.min(100, currentParts / fund.totalParts * 100) + "%";
-    $("#modeText").textContent = "策略自动计算";
+    $("#modeText").textContent = action.mode === "blocked" ? "策略信号已暂停" : "策略自动计算";
   }
 
-  function renderFundOverview(views) {
+  function renderFundOverview(views, health) {
     $("#fundOverview").innerHTML = FUND_ORDER.map(code => {
       const view = views[code];
-      const action = actionFor(view);
+      const action = actionFor(view, health);
       const distance = view.next ? Math.max(0, view.next[0] + view.dd) : null;
       const near = action.mode === "wait" && distance != null && distance <= 0.5;
       const stateClass = near ? "near" : action.mode;
-      const stateText = action.mode === "buy" ? "买入信号"
+      const stateText = action.mode === "blocked" ? "数据待核验" : action.mode === "buy" ? "买入信号"
         : action.mode === "sell" ? "卖出信号"
         : action.mode === "stop" ? "买点已用完"
         : near ? "临近买点 " + distance.toFixed(2) + "%"
@@ -195,12 +211,12 @@
     }).join("");
   }
 
-  function renderSteps(view) {
+  function renderSteps(view, blocked) {
     const { fund, next, triggered } = view;
     $("#steps").innerHTML = fund.ladder.map(([level, parts]) => {
       let cls = "wait", status = "等待";
       if (triggered.has(level)) { cls = "done"; status = "本轮已触发"; }
-      else if (next && level === next[0]) { cls = "current"; status = "下一买点"; }
+      else if (!blocked && next && level === next[0]) { cls = "current"; status = "下一买点"; }
       return '<div class="step ' + cls + '"><div class="pct">' + levelText(level) + '</div><div class="qty">买 ' + parts + ' 份</div><div class="state">' + status + '</div></div>';
     }).join("");
     $("#ladderSummary").textContent = fund.ladder.length + " 个固定买点 · 波段资金 " + fund.totalParts + " 份";
@@ -214,7 +230,7 @@
     $("#strategyNoteText").textContent = "本轮策略已投入由回测买入信号自动汇总，与实际执行无关。";
   }
 
-  function renderChart(view) {
+  function renderChart(view, blocked) {
     const { fund, dd, next, signals } = view;
     const latest = new Date(fund.latestDate + "T00:00:00Z");
     const firstDate = fund.data[0][0];
@@ -255,7 +271,7 @@
     const rangePeakDate = data[values.indexOf(rangeHigh)][0];
     const referenceHigh = isLatestPoint ? fund.high : rangeHigh;
     const referencePeakDate = isLatestPoint ? fund.peakDate : rangePeakDate;
-    const nextValue = isLatestPoint && next ? fund.high * (1 - next[0] / 100) : null;
+    const nextValue = !blocked && isLatestPoint && next ? fund.high * (1 - next[0] / 100) : null;
     const rawMin = Math.min(...values, nextValue ?? Infinity), rawMax = Math.max(...values, referenceHigh);
     const pad = Math.max((rawMax - rawMin) * 0.1, rawMax * 0.01);
     const min = rawMin - pad, max = rawMax + pad;
@@ -297,14 +313,15 @@
     const pointSub = isLatestPoint ? fmtPct(dd) : data.at(-1)[0];
     const highLabel = isLatestPoint ? "策略基准高点" : "区间最高点";
     $("#chart").innerHTML = grid + '<line class="high-line" x1="' + L + '" y1="' + highY + '" x2="' + (W - R) + '" y2="' + highY + '"/><text class="chart-label high" x="' + (L + 10) + '" y="' + (highY - 8) + '">' + highLabel + ' · ' + referencePeakDate + "</text>" + nextLine + '<path class="curve-shadow" d="' + path + '"/><path class="curve" d="' + path + '"/><circle class="current-point" cx="' + currentPoint[0] + '" cy="' + currentPoint[1] + '" r="6"/><text class="chart-value" text-anchor="end" x="' + (currentPoint[0] - 12) + '" y="' + (currentPoint[1] - 13) + '">' + pointTitle + '</text><text class="chart-label" text-anchor="end" x="' + (currentPoint[0] - 12) + '" y="' + (currentPoint[1] + 19) + '">' + pointSub + "</text>" + signalMarkup + dateLabels + legend;
-    $("#chartCaption").textContent = "分红再投资复权净值 · " + rangeLabel + " · " + data.length + " 条 · 买入信号日 " + buyCount + " / 卖出信号日 " + sellCount;
+    $("#chartCaption").textContent = "分红再投资复权净值 · " + rangeLabel + " · " + data.length + " 条 · 买入信号日 " + buyCount + " / 卖出信号日 " + sellCount + (blocked ? " · 数据异常，历史信号仅供查看" : "");
   }
 
   function render() {
     const views = Object.fromEntries(FUND_ORDER.map(code => [code, getView(code)]));
     const view = views[selectedCode];
-    const action = actionFor(view);
-    renderFundOverview(views); renderHeader(view); renderMetrics(view, action); renderSteps(view); renderStrategy(view); renderChart(view);
+    const health = dataHealth();
+    const action = actionFor(view, health);
+    renderFundOverview(views, health); renderHeader(view, health); renderMetrics(view, action); renderSteps(view, health.blocked); renderStrategy(view); renderChart(view, health.blocked);
     document.querySelectorAll(".range-btn").forEach(button => {
       const active = button.dataset.range === chartRange;
       button.classList.toggle("active", active);
