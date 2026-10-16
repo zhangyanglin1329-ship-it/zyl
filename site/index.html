@@ -207,7 +207,7 @@
         : action.mode === "stop" ? "买点已用完"
         : near ? "临近买点 " + distance.toFixed(2) + "%"
         : distance == null ? "等待信号" : "距买点 " + distance.toFixed(2) + "%";
-      return '<button type="button" class="fund-summary ' + stateClass + (code === selectedCode ? " active" : "") + '" data-code="' + code + '" aria-pressed="' + (code === selectedCode) + '"><span class="fund-summary-name">' + view.fund.shortName + '</span><span class="fund-summary-code">' + code + '</span><span class="fund-summary-dd">' + fmtPct(view.dd) + '</span><span class="fund-summary-next">下一 ' + (view.next ? levelText(view.next[0]) : "—") + '</span><span class="fund-summary-parts">本轮 ' + view.currentParts + ' / ' + view.fund.totalParts + ' 份</span><span class="fund-summary-state">' + stateText + '</span></button>';
+      return '<button type="button" class="fund-summary ' + stateClass + (code === selectedCode ? " active" : "") + '" data-code="' + code + '" aria-pressed="' + (code === selectedCode) + '"><span class="fund-summary-name">' + view.fund.shortName + '</span><span class="fund-summary-code">' + code + '</span><span class="fund-summary-dd">' + fmtPct(view.dd) + '</span><span class="fund-summary-next">' + (health.blocked ? "策略暂停" : "下一 " + (view.next ? levelText(view.next[0]) : "—")) + '</span><span class="fund-summary-parts">本轮 ' + view.currentParts + ' / ' + view.fund.totalParts + ' 份</span><span class="fund-summary-state">' + stateText + '</span></button>';
     }).join("");
   }
 
