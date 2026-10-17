@@ -8,7 +8,9 @@ on:
       - "site/**"
       - ".github/workflows/update-and-deploy.yml"
   schedule:
-    # 01:30 UTC = 09:30 Asia/Shanghai
+    # 00:00 UTC = 08:00 Asia/Shanghai (morning primary update)
+    - cron: "0 0 * * *"
+    # 01:30 UTC = 09:30 Asia/Shanghai (retry for delayed NAV publication)
     - cron: "30 1 * * *"
 
 permissions:
