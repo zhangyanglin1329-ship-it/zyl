@@ -8,7 +8,9 @@ on:
       - "site/**"
       - ".github/workflows/update-and-deploy.yml"
   schedule:
-    # 01:30 UTC = 09:30 Asia/Shanghai
+    # 00:00 UTC = 08:00 Asia/Shanghai (morning primary update)
+    - cron: "0 0 * * *"
+    # 01:30 UTC = 09:30 Asia/Shanghai (retry for delayed NAV publication)
     - cron: "30 1 * * *"
 
 permissions:
@@ -28,6 +30,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate NAV updater PowerShell syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path ./scripts/update-multi-fund-data.ps1),
+            [ref]$tokens, [ref]$parseErrors
+          ) | Out-Null
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
 
       - name: Update formal NAV data
         id: nav_refresh

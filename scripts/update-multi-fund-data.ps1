@@ -20,14 +20,37 @@ catch {
   exit 2
 }
 
+
+# 2026 SSE market closure days: https://www.sse.com.cn/disclosure/dealinstruc/closed/c/c_20251222_10802510.shtml
+# Update this calendar when the exchange publishes the following year's closure schedule.
+$marketClosedDates = @('2026-01-01','2026-01-02','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-23','2026-04-06','2026-05-01','2026-05-04','2026-05-05','2026-06-19','2026-09-25','2026-10-01','2026-10-02','2026-10-05','2026-10-06','2026-10-07')
+
+function Get-ExpectedLatestTradeDate {
+  $chinaNow = [DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromHours(8))
+  # By 08:00 Beijing time, the previous completed trading day's NAV should be checked.
+  $daysBack = if ($chinaNow.Hour -lt 8) { 2 } else { 1 }
+  $candidate = $chinaNow.Date.AddDays(-$daysBack)
+  while ($candidate.DayOfWeek -eq [DayOfWeek]::Saturday -or
+         $candidate.DayOfWeek -eq [DayOfWeek]::Sunday -or
+         $marketClosedDates -contains $candidate.ToString('yyyy-MM-dd', $culture)) {
+    $candidate = $candidate.AddDays(-1)
+  }
+  return $candidate.ToString('yyyy-MM-dd', $culture)
+}
+
 function Set-EmbeddedStatus($payload) {
   if (-not (Test-Path -LiteralPath $HtmlPath)) { return }
   $currentHtml = Get-Content -Raw -Encoding UTF8 -LiteralPath $HtmlPath
   $compact = [ordered]@{
     success = [bool]$payload.success
     checkedAt = [string]$payload.checkedAt
+    outcome = [string]$payload.outcome
     message = [string]$payload.message
-  } | ConvertTo-Json -Compress
+    expectedDate = [string]$payload.details.expectedDate
+    latestDate = [string]$payload.details.latestDate
+    newRows = [int]$payload.details.totalNewRows
+    pendingFunds = @($payload.details.pendingFunds)
+  } | ConvertTo-Json -Compress -Depth 8
   $pattern = 'window\.MULTI_FUND_UPDATE_STATUS=\{.*?\};window\.MULTI_FUND_DB='
   if (-not [regex]::IsMatch($currentHtml, $pattern, [Text.RegularExpressions.RegexOptions]::Singleline)) {
     throw 'Embedded update-status marker was not found in V2 HTML'
@@ -44,10 +67,11 @@ function Set-EmbeddedStatus($payload) {
   Move-Item -LiteralPath $statusTempPath -Destination $HtmlPath -Force
 }
 
-function Write-Status([bool]$success, [string]$message, $details) {
+function Write-Status([bool]$success, [string]$message, $details, [string]$outcome) {
   $payload = [ordered]@{
     success = $success
     checkedAt = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ', $culture)
+    outcome = $outcome
     message = $message
     details = $details
   }
@@ -313,18 +337,30 @@ try {
     Move-Item -LiteralPath $tempPath -Destination $HtmlPath -Force
   }
 
+  $expectedDate = Get-ExpectedLatestTradeDate
+  $pendingFunds = @($details | Where-Object { $_.latestDate -lt $expectedDate } | ForEach-Object { $_.fundCode })
+  $outcome = if ($pendingFunds.Count -gt 0) { 'pending' } elseif ($totalNewRows -gt 0) { 'updated' } else { 'current' }
+  $message = if ($outcome -eq 'pending') {
+    "Checked $($fundCodes.Count) funds; NAV pending for $($pendingFunds -join ',') (expected >= $expectedDate)"
+  } elseif ($outcome -eq 'updated') {
+    "Updated $totalNewRows NAV row(s) across $($fundCodes.Count) funds"
+  } else {
+    "Checked $($fundCodes.Count) funds; NAV already current for trading date $expectedDate"
+  }
   $summary = [ordered]@{
     fundsChecked = $fundCodes.Count
     totalNewRows = $totalNewRows
+    expectedDate = $expectedDate
+    pendingFunds = $pendingFunds
     latestDate = ($details | Select-Object -ExpandProperty latestDate | Sort-Object -Descending | Select-Object -First 1)
     backupFile = $backupPath
     funds = $details.ToArray()
   }
-  Write-Status $true "Checked $($fundCodes.Count) funds; $totalNewRows new row(s) added" $summary
+  Write-Status $true $message $summary $outcome
   Write-Output ($summary | ConvertTo-Json -Depth 12)
 }
 catch {
-  Write-Status $false $_.Exception.Message @{ navDataPreserved = $true; funds = $fundCodes }
+  Write-Status $false $_.Exception.Message @{ navDataPreserved = $true; funds = $fundCodes } "error"
   Write-Error $_.Exception.Message
   exit 1
 }
