@@ -912,30 +912,44 @@ html,body{width:100%;height:100%;overflow:hidden}
     return normalized && !Number.isNaN(parsed.getTime()) ? parsed : null;
   }
 
-  // The update runs at 09:30 Beijing time each day; allow 90 minutes for publication.
-  // Weekends are skipped. Market holidays may require manual verification.
+  // SSE 2026 holiday schedule. Keep this list aligned with the NAV updater script.
+  // Source: https://www.sse.com.cn/disclosure/dealinstruc/closed/c/c_20251222_10802510.shtml
+  const MARKET_CLOSED_2026 = new Set(["2026-01-01","2026-01-02","2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-04-06","2026-05-01","2026-05-04","2026-05-05","2026-06-19","2026-09-25","2026-10-01","2026-10-02","2026-10-05","2026-10-06","2026-10-07"]);
+
+  // At 08:00 Beijing, the previous completed market day's NAV becomes due for morning checks.
+  // Before the morning update window, tolerate the earlier trading day's NAV.
   function expectedLatestNavDate(now) {
     const china = new Date(now.getTime() + 8 * 3600000);
-    const beforePublishWindow = china.getUTCHours() < 11;
+    const daysBack = china.getUTCHours() < 8 ? 2 : 1;
     const day = new Date(Date.UTC(china.getUTCFullYear(), china.getUTCMonth(),
-      china.getUTCDate() - (beforePublishWindow ? 2 : 1)));
-    while (day.getUTCDay() === 0 || day.getUTCDay() === 6) day.setUTCDate(day.getUTCDate() - 1);
+      china.getUTCDate() - daysBack));
+    while (day.getUTCDay() === 0 || day.getUTCDay() === 6 ||
+           MARKET_CLOSED_2026.has(day.toISOString().slice(0, 10))) {
+      day.setUTCDate(day.getUTCDate() - 1);
+    }
     return day.toISOString().slice(0, 10);
   }
 
   function dataHealth(now = new Date()) {
-    if (UPDATE_STATUS.success !== true) return { blocked: true, level: "error", text: "自动更新失败，历史净值保持不变。原因：" + (UPDATE_STATUS.message || "未知") + "。已暂停策略信号。" };
+    if (UPDATE_STATUS.success !== true) return { blocked: true, level: "error",
+      text: "自动核验失败，历史净值保持不变。原因：" + (UPDATE_STATUS.message || "未知") + "。已暂停当前策略信号。" };
     const checked = parseCheckedAt(UPDATE_STATUS.checkedAt);
-    if (!checked) return { blocked: true, level: "error", text: "缺少有效的自动更新时间，已暂停策略信号。" };
+    if (!checked) return { blocked: true, level: "error", text: "缺少有效的自动核验时间，已暂停当前策略信号。" };
     const ageHours = (now.getTime() - checked.getTime()) / 3600000;
-    if (ageHours < -1 || ageHours > 36) return { blocked: true, level: "warning", text: "最近一次净值核验超过36小时或时间异常，已暂停策略信号。" };
+    if (ageHours < -1 || ageHours > 36) return { blocked: true, level: "warning",
+      text: "最近一次净值核验超过36小时或时间异常，已暂停当前策略信号。" };
     const expected = expectedLatestNavDate(now);
     const stale = FUND_ORDER.filter(code => {
       const date = DB[code]?.latestDate;
       return typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date) || date < expected;
     });
-    if (stale.length) return { blocked: true, level: "warning", text: "净值日期早于预期基准 " + expected + "：" + stale.join("、") + "。可能涉及节假日或停牌，请人工核实后使用策略信号。" };
-    return { blocked: false, level: "ok", text: "净值核验正常 · " + UPDATE_STATUS.checkedAt };
+    if (stale.length) return { blocked: true, level: "warning",
+      text: "应核验的最近交易日为 " + expected + "；以下基金净值尚未更新：" +
+        stale.join("、") + "。系统每日北京时间08:00更新、09:30补查；数据齐全前暂停当前策略信号（节假日以休市日历为准）。" };
+    const outcome = UPDATE_STATUS.outcome;
+    return { blocked: false, level: "ok", text:
+      outcome === "updated" ? "新净值更新完成 · " + (UPDATE_STATUS.newRows || 0) + " 条" :
+      "最近交易日净值已核验 · " + expected };
   }
 
   function renderHeader(view, health) {
@@ -948,8 +962,8 @@ html,body{width:100%;height:100%;overflow:hidden}
       hour: "2-digit", minute: "2-digit", hour12: false,
     }).format(checked) : "未知";
     $("#navDate").textContent = "净值日期 " + fund.latestDate;
-    $("#dataStamp").textContent = (UPDATE_STATUS.success === true ? "北京时间校验 " : "北京时间校验失败 ") + chinaTime + " · 页面≤3分钟自动刷新";
-    $("#sourceStamp").textContent = health.blocked ? "数据待核验 · 策略暂停" : "双源自动更新已核验";
+    $("#dataStamp").textContent = "北京时间核验 " + chinaTime + " · 页面≤3分钟自动刷新";
+    $("#sourceStamp").textContent = health.blocked ? (UPDATE_STATUS.success === false ? "更新异常 · 策略暂停" : "净值待更新 · 策略暂停") : (UPDATE_STATUS.outcome === "updated" ? "新净值已更新" : "净值已核验");
     $("#sourceStamp").className = "live " + health.level;
     const alertText = health.blocked ? health.text : "";
     $("#systemAlertText").textContent = alertText;
