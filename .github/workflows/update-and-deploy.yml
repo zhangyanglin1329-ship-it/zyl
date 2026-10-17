@@ -31,6 +31,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate NAV updater PowerShell syntax
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path ./scripts/update-multi-fund-data.ps1),
+            [ref]$tokens, [ref]$parseErrors
+          ) | Out-Null
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+
       - name: Update formal NAV data
         id: nav_refresh
         continue-on-error: true
