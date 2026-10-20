@@ -1,0 +1,4 @@
+NAV_REFRESH_TRIGGER_V1
+source=chatgpt-scheduled-nav-monitor
+state=initialized
+# Updating this marker on main requests the existing fund NAV workflow.
