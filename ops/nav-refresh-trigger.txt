@@ -1,4 +1,5 @@
 NAV_REFRESH_TRIGGER_V1
 source=chatgpt-scheduled-nav-monitor
-state=initialized
+state=manual-connector-test
+attempt_id=2026-10-20-nav-connector-test-01
 # Updating this marker on main requests the existing fund NAV workflow.
