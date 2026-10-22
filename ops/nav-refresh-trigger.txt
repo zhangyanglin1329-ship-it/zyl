@@ -3,3 +3,4 @@ source=chatgpt-scheduled-nav-monitor
 state=manual-connector-test
 attempt_id=2026-10-20-nav-connector-test-01
 # Updating this marker on main requests the existing fund NAV workflow.
+request_id=2026-10-22-missed-morning-recovery-01
