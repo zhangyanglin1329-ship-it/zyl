@@ -27,9 +27,9 @@ $marketClosedDates = @('2026-01-01','2026-01-02','2026-02-16','2026-02-17','2026
 
 function Get-ExpectedLatestTradeDate {
   $chinaNow = [DateTimeOffset]::UtcNow.ToOffset([TimeSpan]::FromHours(8))
-  # By 08:00 Beijing time, the previous completed trading day's NAV should be checked.
-  $daysBack = if ($chinaNow.Hour -lt 8) { 2 } else { 1 }
-  $candidate = $chinaNow.Date.AddDays(-$daysBack)
+  # The target is the last fully completed trading day, including after midnight Beijing time.
+  # Moving the schedule to 00:17 must not silently accept NAV from two trading days ago.
+  $candidate = $chinaNow.Date.AddDays(-1)
   while ($candidate.DayOfWeek -eq [DayOfWeek]::Saturday -or
          $candidate.DayOfWeek -eq [DayOfWeek]::Sunday -or
          $marketClosedDates -contains $candidate.ToString('yyyy-MM-dd', $culture)) {
